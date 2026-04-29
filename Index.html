@@ -1,0 +1,2057 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibra Lejana</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --bone: #F2EBDC;
+    --bone-soft: #E8DFCD;
+    --black: #0B0908;
+    --black-soft: #161311;
+    --red: #C93030;
+    --red-deep: #8E1F1F;
+    --grain-opacity: 0.08;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    background: var(--black);
+    color: var(--bone);
+    font-family: 'Space Grotesk', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.92 0 0 0 0 0.86 0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    opacity: var(--grain-opacity);
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: overlay;
+  }
+
+  /* ── INTRO OVERLAY ── */
+  #vl-intro {
+    position: fixed;
+    inset: 0;
+    background: var(--black);
+    z-index: 10001;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    transition: opacity 1s ease, visibility 1s ease;
+  }
+  #vl-intro.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .intro-stage {
+    position: relative;
+    width: 64vmin;
+    height: 64vmin;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .intro-vinyl-wrap {
+    position: absolute;
+    inset: 0;
+    animation: intro-rise 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s both;
+  }
+  @keyframes intro-rise {
+    from { transform: translateY(90vh); opacity: 0.3; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  .intro-vinyl {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 50%, var(--red) 0 6%, transparent 6.2%),
+      radial-gradient(circle at 50% 50%, var(--black) 6.2% 14%, transparent 14.2%),
+      radial-gradient(circle at 50% 50%, var(--red-deep) 14% 16%, transparent 16.2%),
+      repeating-radial-gradient(circle at 50% 50%, #1a1815 16% 16.4%, #0a0807 16.4% 16.9%);
+    box-shadow: inset 0 0 60px rgba(0,0,0,0.8), 0 40px 120px rgba(0,0,0,0.9);
+    animation: intro-spin 2.4s linear infinite;
+    position: relative;
+  }
+  .intro-vinyl::after {
+    content: "";
+    position: absolute; top: 50%; left: 50%;
+    width: 1.6%; height: 1.6%;
+    background: var(--bone);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .intro-vinyl .vinyl-shine {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,0.04) 30deg, transparent 60deg, transparent 180deg, rgba(255,255,255,0.03) 210deg, transparent 240deg);
+  }
+  @keyframes intro-spin {
+    to { transform: rotate(360deg); }
+  }
+  .intro-text-over {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    text-shadow: 0 0 40px rgba(0,0,0,1), 0 0 80px rgba(0,0,0,1);
+    animation: intro-text-in 0.9s ease 1.8s both;
+  }
+  .intro-text-over .intro-name {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: clamp(24px, 4.5vmin, 52px);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .intro-text-over .intro-sub {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 400;
+    font-size: clamp(9px, 1.4vmin, 14px);
+    letter-spacing: 0.4em;
+    opacity: 0.7;
+    margin-top: 10px;
+  }
+  @keyframes intro-text-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .intro-scroll-hint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    animation: intro-hint-in 0.7s ease 2.6s both;
+    pointer-events: none;
+  }
+  .intro-scroll-hint .line {
+    width: 1px; height: 36px;
+    background: var(--bone);
+    animation: scroll-line 1.8s ease-in-out infinite;
+    transform-origin: top;
+  }
+  @keyframes intro-hint-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 0.5; transform: translateY(0); }
+  }
+
+  /* ── CURSOR ── */
+  .vl-cursor {
+    position: fixed;
+    width: 24px; height: 24px;
+    pointer-events: none;
+    z-index: 10000;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s, height 0.2s;
+    will-change: transform;
+  }
+  .vl-cursor svg { width: 100%; height: 100%; display: block; }
+  .vl-cursor.hover { width: 44px; height: 44px; }
+  .vl-cursor-trail {
+    position: fixed;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--red);
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    opacity: 0.4;
+    transition: opacity 0.4s;
+  }
+
+  /* ── NAV ── */
+  nav.vl-nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 18px 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 100;
+    background: rgba(11, 9, 8, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(242, 235, 220, 0.06);
+    color: var(--bone);
+  }
+  .vl-nav-logo {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    font-size: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .vl-nav-logo .dot { width: 8px; height: 8px; background: var(--red); border-radius: 50%; }
+  .vl-nav-links { display: flex; gap: 32px; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 500; }
+  .vl-nav-links a { color: inherit; text-decoration: none; transition: opacity 0.2s; }
+  .vl-nav-links a:hover { opacity: 0.6; }
+  .vl-nav-cta {
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px; letter-spacing: 0.18em;
+    padding: 10px 18px; border: 1px solid var(--bone);
+    text-transform: uppercase;
+    text-decoration: none; color: var(--bone);
+    transition: all 0.2s;
+  }
+  .vl-nav-cta:hover { background: var(--red); border-color: var(--red); }
+
+  /* ── HERO ── */
+  .vl-hero {
+    height: 100vh;
+    min-height: 720px;
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+  }
+  .vl-hero-vinyl {
+    position: absolute;
+    width: 90vmin; height: 90vmin;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    will-change: transform;
+  }
+  .vinyl {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 50%, var(--red) 0 6%, transparent 6.2%),
+      radial-gradient(circle at 50% 50%, var(--black) 6.2% 14%, transparent 14.2%),
+      radial-gradient(circle at 50% 50%, var(--red-deep) 14% 16%, transparent 16.2%),
+      repeating-radial-gradient(circle at 50% 50%, #1a1815 16% 16.4%, #0a0807 16.4% 16.9%);
+    box-shadow:
+      inset 0 0 60px rgba(0,0,0,0.8),
+      0 30px 80px rgba(0,0,0,0.6);
+    position: relative;
+  }
+  .vinyl::after {
+    content: "";
+    position: absolute; top: 50%; left: 50%;
+    width: 1.6%; height: 1.6%;
+    background: var(--bone);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.5);
+  }
+  .vinyl-shine {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,0.04) 30deg, transparent 60deg, transparent 180deg, rgba(255,255,255,0.03) 210deg, transparent 240deg);
+    pointer-events: none;
+  }
+  .vl-hero-content {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    width: 100%;
+    padding: 0 48px;
+  }
+  .vl-hero-slogan {
+    font-family: 'Oswald', sans-serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(20px, 2.4vw, 32px);
+    letter-spacing: 0.06em;
+    color: var(--red);
+    margin-top: 28px;
+    text-shadow: 0 0 30px rgba(0,0,0,0.9);
+  }
+  .vl-hero-marquee {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--bone);
+    opacity: 0.6;
+    margin-bottom: 24px;
+    display: flex; justify-content: center; align-items: center; gap: 16px;
+  }
+  .vl-hero-marquee .bar { width: 40px; height: 1px; background: var(--bone); opacity: 0.4; }
+  .vl-hero-marquee .red-dot { width: 6px; height: 6px; background: var(--red); border-radius: 50%; animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .vl-hero-title {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: clamp(80px, 18vw, 280px);
+    line-height: 0.85;
+    letter-spacing: 0.02em;
+    color: var(--bone);
+    text-shadow: 0 0 40px rgba(0,0,0,0.8);
+  }
+  .vl-hero-title .lejana {
+    display: block;
+    font-weight: 300;
+    letter-spacing: 0.18em;
+    font-size: 0.42em;
+    margin-top: 12px;
+    color: var(--bone);
+    position: relative;
+  }
+  .vl-hero-title .lejana::before,
+  .vl-hero-title .lejana::after {
+    content: "";
+    display: inline-block;
+    width: 60px; height: 1px;
+    background: var(--red);
+    vertical-align: middle;
+    margin: 0 24px;
+  }
+  .vl-hero-letter { display: inline-block; }
+  .vl-hero-meta {
+    margin-top: 36px;
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .vl-hero-meta span { display: flex; align-items: center; gap: 8px; }
+  .vl-hero-meta .red { color: var(--red); }
+  .vl-hero-scroll {
+    position: absolute;
+    bottom: 32px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .vl-hero-scroll .line { width: 1px; height: 32px; background: var(--bone); animation: scroll-line 2s ease-in-out infinite; transform-origin: top; }
+  @keyframes scroll-line { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.3); } }
+
+  /* ── WAVEFORM ── */
+  .vl-waveform {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 0 48px;
+    overflow: hidden;
+  }
+  .vl-waveform .bar { width: 3px; background: var(--bone); opacity: 0.4; border-radius: 2px; }
+  .vl-waveform .bar.red { background: var(--red); opacity: 1; }
+
+  /* ── SECTIONS ── */
+  section.vl-section {
+    padding: 120px 48px;
+    position: relative;
+  }
+  .vl-section-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 32px;
+    margin-bottom: 80px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(242, 235, 220, 0.15);
+  }
+  .vl-section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--red);
+  }
+  .vl-section-title {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: clamp(40px, 6vw, 80px);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .vl-section-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    opacity: 0.5;
+    text-transform: uppercase;
+  }
+
+  /* ── SOBRE ── */
+  .vl-sobre { background: var(--black); }
+  .vl-sobre-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+  .vl-sobre-lead {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 300;
+    font-size: clamp(32px, 4vw, 56px);
+    line-height: 1.1;
+    letter-spacing: 0.01em;
+  }
+  .vl-sobre-lead .red { color: var(--red); }
+  .vl-sobre-lead em { font-style: normal; font-weight: 600; }
+  .vl-sobre-text {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--bone-soft);
+    display: flex; flex-direction: column; gap: 24px;
+  }
+  .vl-sobre-text p::first-letter {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.6em;
+    color: var(--red);
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .vl-sobre-stats {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    padding: 24px;
+    border: 1px solid rgba(242, 235, 220, 0.15);
+  }
+  .vl-stat-num {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 48px;
+    color: var(--red);
+    line-height: 1;
+  }
+  .vl-stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-top: 8px;
+    opacity: 0.7;
+  }
+
+  /* ── BANDA ── */
+  .vl-band { background: var(--black-soft); }
+  .vl-band-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+  }
+  .vl-member { aspect-ratio: 3/4; perspective: 1200px; cursor: none; }
+  .vl-member-inner {
+    position: relative;
+    width: 100%; height: 100%;
+    transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+  .vl-member:hover .vl-member-inner { transform: rotateY(180deg); }
+  .vl-member-face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    overflow: hidden;
+  }
+  .vl-member-front {
+    background: linear-gradient(180deg, #1a1715 0%, #0a0807 100%);
+    border: 1px solid rgba(242,235,220,0.1);
+    justify-content: space-between;
+  }
+  .vl-member-front::before {
+    content: "";
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70%; aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 50%, var(--red) 0 8%, transparent 8.5%),
+      repeating-radial-gradient(circle at 50% 50%, rgba(242,235,220,0.06) 0 2px, transparent 2px 4px);
+    opacity: 0.7;
+  }
+  .vl-member-side {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--red);
+    z-index: 2;
+  }
+  .vl-member-name {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    z-index: 2;
+  }
+  .vl-member-rol {
+    font-size: 12px;
+    color: var(--bone-soft);
+    margin-top: 6px;
+    line-height: 1.3;
+    z-index: 2;
+  }
+  .vl-member-back {
+    background: var(--red);
+    color: var(--bone);
+    transform: rotateY(180deg);
+    justify-content: space-between;
+  }
+  .vl-member-back::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'><defs><pattern id='p' width='8' height='8' patternUnits='userSpaceOnUse'><circle cx='1' cy='1' r='0.6' fill='%23F2EBDC' opacity='0.18'/></pattern></defs><rect width='100%25' height='100%25' fill='url(%23p)'/></svg>");
+  }
+  .vl-member-bio {
+    font-size: 14px;
+    line-height: 1.5;
+    z-index: 2;
+    margin-top: 12px;
+  }
+  .vl-member-back .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    z-index: 2;
+  }
+  .vl-member-photo-placeholder {
+    z-index: 2;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    opacity: 0.4;
+    text-align: center;
+    margin-top: auto;
+    margin-bottom: 8px;
+  }
+
+  /* ── SETLIST ── */
+  .vl-setlist { background: var(--black); color: var(--bone); }
+  .vl-setlist .vl-section-header { border-bottom-color: rgba(242,235,220,0.15); }
+  .vl-setlist .vl-section-num { color: var(--red); }
+  .vl-setlist-meta { display: flex; gap: 24px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; opacity: 0.5; text-transform: uppercase; margin-bottom: 32px; }
+  .vl-setlist-table { width: 100%; border-top: 1px solid rgba(242,235,220,0.2); }
+  .vl-track {
+    display: grid;
+    grid-template-columns: 60px 1fr 1fr;
+    gap: 24px;
+    align-items: center;
+    padding: 18px 8px;
+    border-bottom: 1px solid rgba(242,235,220,0.12);
+    cursor: none;
+    position: relative;
+    transition: background 0.2s, padding-left 0.2s;
+  }
+  .vl-track:hover {
+    background: var(--red);
+    padding-left: 20px;
+    color: var(--bone);
+  }
+  .vl-track-num {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 24px;
+    letter-spacing: 0.02em;
+  }
+  .vl-track-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+  .vl-track-artist { font-size: 14px; opacity: 0.7; font-style: italic; }
+  .vl-track-info {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    opacity: 0.8;
+    text-align: right;
+  }
+  .vl-track-arrow {
+    font-family: 'Oswald', sans-serif;
+    font-size: 24px;
+    text-align: right;
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: all 0.2s;
+  }
+  .vl-track-detail {
+    grid-column: 3 / -1;
+    margin-top: -8px;
+    margin-bottom: -8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: all 0.25s;
+    color: var(--red);
+  }
+
+  /* ── DEMOS ── */
+  .vl-demos { background: var(--black); border-top: 1px solid rgba(242,235,220,0.1); }
+  .vl-demos-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+  }
+  .vl-demos-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--bone);
+    opacity: 0.7;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .vl-demos-label .dot { width: 8px; height: 8px; background: var(--red); border-radius: 50%; }
+  .vl-demos-list { display: flex; flex-direction: column; gap: 4px; }
+  .vl-demo {
+    display: grid;
+    grid-template-columns: 60px 1fr auto auto;
+    align-items: center;
+    gap: 32px;
+    padding: 24px;
+    background: var(--black-soft);
+    border: 1px solid rgba(242,235,220,0.08);
+    cursor: none;
+    transition: all 0.2s;
+  }
+  .vl-demo:hover { border-color: var(--red); }
+  .vl-demo-play {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--bone);
+    display: grid; place-items: center;
+    transition: all 0.2s;
+  }
+  .vl-demo:hover .vl-demo-play { background: var(--red); border-color: var(--red); }
+  .vl-demo-play::after {
+    content: "";
+    width: 0; height: 0;
+    border-left: 10px solid var(--bone);
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    margin-left: 3px;
+  }
+  .vl-demo-title { font-family: 'Oswald', sans-serif; font-size: 20px; font-weight: 500; }
+  .vl-demo-sub { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; opacity: 0.5; margin-top: 4px; }
+  .vl-demo-wave { display: flex; gap: 2px; align-items: center; height: 32px; }
+  .vl-demo-wave .b { width: 2px; background: var(--bone); opacity: 0.3; }
+  .vl-demo:hover .vl-demo-wave .b { background: var(--red); opacity: 0.8; }
+  .vl-demo-time { font-family: 'JetBrains Mono', monospace; font-size: 12px; opacity: 0.6; }
+
+  /* ── VIDEO CAROUSEL ── */
+  .vl-carousel-wrap { position: relative; }
+  .vl-carousel {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .vl-carousel::-webkit-scrollbar { display: none; }
+  .vl-carousel-item {
+    flex: 0 0 calc(50% - 8px);
+    scroll-snap-align: start;
+  }
+  .vl-yt-card {
+    display: block;
+    text-decoration: none;
+    color: var(--bone);
+    background: var(--black-soft);
+    border: 1px solid rgba(242,235,220,0.08);
+    transition: border-color 0.2s;
+    cursor: none;
+  }
+  .vl-yt-card:hover { border-color: var(--red); }
+  .vl-yt-thumb {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    height: 0;
+    background: linear-gradient(135deg, #1a1715 0%, #0a0807 100%);
+    overflow: hidden;
+  }
+  .vl-yt-thumb img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0.85;
+  }
+  .vl-yt-thumb::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 30% 40%, rgba(201,48,48,0.2), transparent 55%),
+      repeating-linear-gradient(90deg, transparent 0 3px, rgba(242,235,220,0.03) 3px 4px);
+    z-index: 1;
+  }
+  .vl-yt-play {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 48px; height: 34px;
+    background: rgba(201, 48, 48, 0.9);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, transform 0.2s;
+    z-index: 2;
+  }
+  .vl-yt-card:hover .vl-yt-play {
+    background: var(--red);
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+  .vl-yt-play::after {
+    content: "";
+    width: 0; height: 0;
+    border-left: 12px solid white;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    margin-left: 3px;
+  }
+  .vl-yt-badge {
+    position: absolute; bottom: 8px; right: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.15em;
+    background: rgba(0,0,0,0.75);
+    color: white; padding: 2px 6px;
+    z-index: 2;
+  }
+  .vl-yt-duration {
+    position: absolute; bottom: 8px; left: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: rgba(0,0,0,0.8);
+    color: white; padding: 2px 6px;
+    z-index: 2;
+  }
+  .vl-yt-info { padding: 12px 14px 14px; }
+  .vl-yt-title { font-family: 'Oswald', sans-serif; font-size: 16px; font-weight: 500; line-height: 1.2; }
+  .vl-yt-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.15em; opacity: 0.5; margin-top: 4px; }
+  .vl-carousel-arrows {
+    display: flex; gap: 8px;
+    margin-top: 16px;
+    justify-content: flex-end;
+  }
+  .carousel-arrow {
+    width: 36px; height: 36px;
+    border: 1px solid rgba(242,235,220,0.3);
+    background: transparent;
+    color: var(--bone);
+    cursor: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s;
+    font-family: 'Oswald', sans-serif;
+  }
+  .carousel-arrow:hover { background: var(--red); border-color: var(--red); }
+
+  /* ── FECHAS ── */
+  .vl-fechas { background: var(--black-soft); }
+  .vl-fechas-list { display: flex; flex-direction: column; }
+  .vl-fecha {
+    display: grid;
+    grid-template-columns: 140px 1fr auto auto;
+    gap: 40px;
+    align-items: center;
+    padding: 32px 8px;
+    border-top: 1px solid rgba(242,235,220,0.15);
+    transition: padding 0.3s;
+  }
+  .vl-fecha:last-child { border-bottom: 1px solid rgba(242,235,220,0.15); }
+  .vl-fecha:hover { padding-left: 24px; background: rgba(201,48,48,0.08); }
+  .vl-fecha-date { font-family: 'Oswald', sans-serif; line-height: 0.9; }
+  .vl-fecha-day { font-size: 64px; font-weight: 700; color: var(--red); }
+  .vl-fecha-mes { font-size: 14px; letter-spacing: 0.3em; opacity: 0.7; margin-top: 8px; }
+  .vl-fecha-info-lugar { font-family: 'Oswald', sans-serif; font-size: 28px; font-weight: 500; }
+  .vl-fecha-info-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; opacity: 0.6; margin-top: 6px; text-transform: uppercase; }
+  .vl-fecha-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    padding: 6px 12px;
+    border: 1px solid var(--bone);
+    text-transform: uppercase;
+  }
+  .vl-fecha-status.confirmado, .vl-fecha-status.booked { background: var(--red); border-color: var(--red); }
+  .vl-fecha-cta {
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--bone); text-decoration: none;
+    border-bottom: 1px solid var(--red);
+    padding-bottom: 4px;
+    transition: all 0.2s;
+  }
+  .vl-fecha-cta:hover { color: var(--red); }
+
+  /* ── BOOKING ── */
+  .vl-booking {
+    background: var(--red); color: var(--bone);
+    padding: 160px 48px;
+    position: relative; overflow: hidden;
+  }
+  .vl-booking::before {
+    content: "";
+    position: absolute; top: 50%; right: -10%;
+    transform: translateY(-50%);
+    width: 80vmin; height: 80vmin;
+    border-radius: 50%;
+    background: repeating-radial-gradient(circle, transparent 0 6px, rgba(11,9,8,0.15) 6px 7px);
+    pointer-events: none;
+  }
+  .vl-booking-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 80px;
+    position: relative; z-index: 2;
+  }
+  .vl-booking-title {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: clamp(48px, 8vw, 120px);
+    line-height: 0.9;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+  }
+  .vl-booking-title em { font-style: italic; font-weight: 300; }
+  .vl-booking-sub { margin-top: 32px; font-size: 18px; line-height: 1.6; max-width: 560px; }
+  .vl-booking-contact { display: flex; flex-direction: column; gap: 24px; align-self: end; }
+  .vl-booking-contact a {
+    color: var(--bone); text-decoration: none;
+    font-family: 'Space Grotesk', sans-serif; font-size: 18px;
+    border-bottom: 1px solid rgba(242,235,220,0.4);
+    padding-bottom: 12px;
+    transition: border-color 0.2s;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .vl-booking-contact a:hover { border-color: var(--bone); }
+  .vl-booking-contact .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.25em; opacity: 0.7; text-transform: uppercase;
+  }
+  .vl-booking-cta {
+    margin-top: 48px;
+    display: inline-flex; align-items: center; gap: 16px;
+    background: var(--black); color: var(--bone);
+    padding: 24px 40px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 18px; letter-spacing: 0.2em; text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .vl-booking-cta:hover { background: var(--bone); color: var(--black); }
+
+  /* ── FOOTER ── */
+  footer.vl-footer {
+    background: var(--black);
+    padding: 64px 48px 32px;
+    border-top: 1px solid rgba(242,235,220,0.1);
+  }
+  .vl-footer-top {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(242,235,220,0.1);
+    margin-bottom: 32px;
+  }
+  .vl-footer-logo {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700; font-size: 64px;
+    letter-spacing: 0.02em; line-height: 0.9;
+  }
+  .vl-footer-logo .l { font-weight: 300; letter-spacing: 0.18em; font-size: 0.4em; display: block; margin-top: 8px; }
+  .vl-footer-social { display: flex; gap: 24px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; }
+  .vl-footer-social a { color: var(--bone); text-decoration: none; opacity: 0.6; transition: opacity 0.2s; }
+  .vl-footer-social a:hover { opacity: 1; color: var(--red); }
+  .vl-footer-bottom {
+    display: flex; justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.2em; opacity: 0.4; text-transform: uppercase;
+  }
+
+  /* ── LIGHTBOX ── */
+  .vl-lightbox {
+    display: none;
+    position: fixed; inset: 0;
+    z-index: 10002;
+    align-items: center;
+    justify-content: center;
+  }
+  .vl-lightbox.open { display: flex; }
+  .vl-lightbox-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.93);
+  }
+  .vl-lightbox-content {
+    position: relative; z-index: 2;
+    width: min(92vw, 960px);
+  }
+  .vl-lightbox-close {
+    position: absolute;
+    top: -52px; right: 0;
+    width: 42px; height: 42px;
+    background: transparent;
+    border: 1px solid rgba(242,235,220,0.35);
+    color: var(--bone);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    font-family: 'Oswald', sans-serif;
+  }
+  .vl-lightbox-close:hover { background: var(--red); border-color: var(--red); }
+  .vl-lightbox-iframe-wrap {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    background: var(--black);
+  }
+  .vl-lightbox-iframe-wrap iframe {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    border: none;
+  }
+
+  /* ── AUDIO PLAYING STATE (card button) ── */
+  .vl-demo-play.playing { background: var(--red); border-color: var(--red); }
+  .vl-demo-play.playing::after {
+    border-left: none; border-top: none; border-bottom: none;
+    width: 3px; height: 13px;
+    background: var(--bone);
+    box-shadow: 7px 0 0 var(--bone);
+    margin-left: -5px;
+  }
+
+  /* ── PLAYER BAR ── */
+  #vl-player {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(11, 9, 8, 0.97);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid rgba(242,235,220,0.12);
+    padding: 14px 48px;
+    z-index: 9990;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    transform: translateY(100%);
+    transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  #vl-player.visible { transform: translateY(0); }
+
+  .player-info { flex: 0 0 180px; min-width: 0; }
+  .player-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 15px; font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .player-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.18em;
+    opacity: 0.5; margin-top: 3px; text-transform: uppercase;
+  }
+
+  .player-btn {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(242,235,220,0.4);
+    background: transparent;
+    color: var(--bone);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .player-btn:hover { background: var(--red); border-color: var(--red); }
+  #player-play-btn::after {
+    content: "";
+    width: 0; height: 0;
+    border-left: 11px solid var(--bone);
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    margin-left: 3px;
+  }
+  #player-play-btn.playing::after {
+    border: none;
+    width: 3px; height: 13px;
+    background: var(--bone);
+    box-shadow: 7px 0 0 var(--bone);
+    margin-left: -5px;
+  }
+
+  .player-progress {
+    flex: 1;
+    display: flex; align-items: center; gap: 12px;
+    min-width: 0;
+  }
+  .player-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; opacity: 0.55;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .player-bar-wrap {
+    flex: 1;
+    height: 3px;
+    background: rgba(242,235,220,0.15);
+    cursor: pointer;
+    position: relative;
+    border-radius: 2px;
+  }
+  .player-bar-wrap:hover { height: 5px; }
+  .player-bar-fill {
+    height: 100%;
+    background: var(--red);
+    width: 0%;
+    border-radius: 2px;
+    pointer-events: none;
+    transition: width 0.15s linear;
+  }
+  .player-bar-fill::after {
+    content: "";
+    position: absolute;
+    right: -5px; top: 50%;
+    transform: translateY(-50%);
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--bone);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .player-bar-wrap:hover .player-bar-fill::after { opacity: 1; }
+
+  .player-close {
+    width: 32px; height: 32px;
+    background: transparent;
+    border: 1px solid rgba(242,235,220,0.2);
+    color: var(--bone); cursor: pointer;
+    font-size: 13px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .player-close:hover { background: var(--red); border-color: var(--red); }
+
+  /* ── BOOKING MODAL ── */
+  .bk-overlay {
+    position: fixed; inset: 0;
+    z-index: 10003;
+    display: none; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .bk-overlay.open { display: flex; }
+  .bk-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.88);
+  }
+  .bk-modal {
+    position: relative; z-index: 2;
+    background: var(--black-soft);
+    border: 1px solid rgba(242,235,220,0.12);
+    width: 100%; max-width: 640px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 48px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--red) transparent;
+  }
+  .bk-modal::-webkit-scrollbar { width: 4px; }
+  .bk-modal::-webkit-scrollbar-thumb { background: var(--red); }
+  .bk-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 36px; height: 36px;
+    background: none; border: 1px solid rgba(242,235,220,0.2);
+    color: var(--bone); cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .bk-close:hover { background: var(--red); border-color: var(--red); }
+  .bk-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; line-height: 1;
+    margin-bottom: 8px;
+  }
+  .bk-subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.25em;
+    opacity: 0.5; text-transform: uppercase;
+    margin-bottom: 36px;
+  }
+  .bk-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .bk-field {
+    display: flex; flex-direction: column; gap: 8px;
+    margin-bottom: 16px;
+  }
+  .bk-row .bk-field { margin-bottom: 0; }
+  .bk-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.25em;
+    text-transform: uppercase; opacity: 0.6;
+  }
+  .bk-input, .bk-select, .bk-textarea {
+    background: rgba(242,235,220,0.04);
+    border: 1px solid rgba(242,235,220,0.15);
+    color: var(--bone);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    padding: 12px 14px;
+    width: 100%;
+    transition: border-color 0.2s;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .bk-input:focus, .bk-select:focus, .bk-textarea:focus {
+    border-color: var(--red);
+  }
+  .bk-input::placeholder, .bk-textarea::placeholder { opacity: 0.3; }
+  .bk-select { cursor: pointer; }
+  .bk-select option { background: #1a1715; }
+  .bk-textarea { resize: vertical; min-height: 100px; }
+  .bk-captcha { margin: 20px 0; }
+  .bk-submit {
+    width: 100%;
+    background: var(--red); color: var(--bone);
+    border: none; padding: 18px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 16px; letter-spacing: 0.2em;
+    text-transform: uppercase; cursor: pointer;
+    transition: background 0.2s, opacity 0.2s;
+    margin-top: 8px;
+  }
+  .bk-submit:hover { background: #a02020; }
+  .bk-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  .bk-success {
+    display: none;
+    text-align: center; padding: 40px 0;
+  }
+  .bk-success.show { display: block; }
+  .bk-success-icon {
+    font-size: 48px; margin-bottom: 20px; color: var(--red);
+    font-family: 'Oswald', sans-serif; font-weight: 700;
+  }
+  .bk-success-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 28px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; margin-bottom: 12px;
+  }
+  .bk-success-msg {
+    font-size: 15px; line-height: 1.6; opacity: 0.7;
+  }
+  .bk-error {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.15em;
+    color: #ff6b6b; margin-top: 12px;
+    display: none;
+  }
+  .bk-error.show { display: block; }
+  @media (max-width: 700px) {
+    .bk-modal { padding: 28px 20px; }
+    .bk-row { grid-template-columns: 1fr; }
+  }
+
+  /* ── HAMBURGER & MOBILE MENU ── */
+  .vl-nav-hamburger {
+    display: none;
+    flex-direction: column; gap: 5px;
+    background: none; border: none; cursor: pointer; padding: 4px;
+  }
+  .vl-nav-hamburger span {
+    display: block; width: 22px; height: 1.5px;
+    background: var(--bone); transition: all 0.3s ease; transform-origin: center;
+  }
+  .vl-nav-hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(4.7px, 4.7px); }
+  .vl-nav-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .vl-nav-hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(4.7px, -4.7px); }
+
+  .vl-mobile-menu {
+    position: fixed; inset: 0;
+    background: var(--black);
+    z-index: 98;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 4px;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+  }
+  .vl-mobile-menu.open { opacity: 1; visibility: visible; }
+  .vl-mobile-link {
+    font-family: 'Oswald', sans-serif;
+    font-size: clamp(30px, 8vw, 46px);
+    font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; text-decoration: none;
+    color: var(--bone); opacity: 0.6;
+    transition: opacity 0.2s, color 0.2s;
+    padding: 10px 0;
+  }
+  .vl-mobile-link:active { opacity: 1; color: var(--red); }
+  .vl-mobile-menu-cta {
+    margin-top: 28px; padding: 14px 40px;
+    font-family: 'Oswald', sans-serif; font-size: 14px;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    text-decoration: none; color: var(--bone);
+    border: 1px solid var(--red);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1100px) {
+    .vl-band-grid { grid-template-columns: repeat(3, 1fr); }
+    .vl-sobre-grid, .vl-booking-grid, .vl-demos-cols { grid-template-columns: 1fr; gap: 48px; }
+  }
+  @media (max-width: 700px) {
+    nav.vl-nav { padding: 14px 20px; }
+    .vl-nav-links { display: none; }
+    .vl-nav-cta { display: none; }
+    .vl-nav-hamburger { display: flex; }
+
+    section.vl-section, .vl-booking { padding: 64px 20px; }
+
+    .vl-hero-meta { flex-direction: column; gap: 8px; }
+    .vl-section-header { grid-template-columns: 1fr; gap: 10px; }
+    .vl-section-title { font-size: clamp(30px, 9vw, 56px); }
+
+    .vl-band-grid { grid-template-columns: repeat(2, 1fr); }
+
+    .vl-track { grid-template-columns: 36px 1fr; gap: 12px; padding: 14px 6px; }
+    .vl-track-artist { display: none; }
+
+    .vl-demo { grid-template-columns: 44px 1fr auto; gap: 12px; padding: 16px; }
+    .vl-demo-wave { display: none; }
+
+    .vl-carousel-item { flex: 0 0 85%; }
+
+    .vl-fecha { grid-template-columns: 80px 1fr; gap: 16px; padding: 20px 6px; }
+    .vl-fecha-status, .vl-fecha-cta { grid-column: 2; justify-self: start; }
+    .vl-fecha-day { font-size: 44px; }
+    .vl-fecha-info-lugar { font-size: 20px; }
+
+    .vl-booking-grid { grid-template-columns: 1fr; gap: 40px; }
+
+    .intro-stage { width: 82vmin; height: 82vmin; }
+
+    #vl-player { padding: 12px 16px; gap: 12px; }
+    .player-info { display: none; }
+
+    .vl-footer-logo { font-size: 40px; }
+    .vl-footer-top { flex-direction: column; gap: 20px; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<!-- INTRO OVERLAY -->
+<div id="vl-intro">
+  <div class="intro-stage">
+    <div class="intro-vinyl-wrap">
+      <div class="intro-vinyl"><div class="vinyl-shine"></div></div>
+    </div>
+    <div class="intro-text-over">
+      <div class="intro-name">VIBRA LEJANA</div>
+      <span class="intro-sub">— ROCK EN VIVO —</span>
+    </div>
+  </div>
+  <div class="intro-scroll-hint">
+    <span>CARGANDO</span>
+    <div class="line"></div>
+  </div>
+</div>
+
+<!-- CURSOR -->
+<div class="vl-cursor" id="vl-cursor">
+  <svg viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="10" stroke="#F2EBDC" stroke-width="1"/>
+    <circle cx="12" cy="12" r="2" fill="#C93030"/>
+    <line x1="12" y1="2" x2="12" y2="6" stroke="#C93030" stroke-width="1.5"/>
+  </svg>
+</div>
+
+<!-- MOBILE MENU -->
+<div class="vl-mobile-menu" id="mobile-menu">
+  <a href="#sobre"   class="vl-mobile-link" data-menu-link>Sobre</a>
+  <a href="#banda"   class="vl-mobile-link" data-menu-link>La Banda</a>
+  <a href="#setlist" class="vl-mobile-link" data-menu-link>Qué Cantamos</a>
+  <a href="#demos"   class="vl-mobile-link" data-menu-link>Demos &amp; Ensayos</a>
+  <a href="#fechas"  class="vl-mobile-link" data-menu-link>Fechas</a>
+  <a href="#booking" class="vl-mobile-menu-cta" data-menu-link>Reservar →</a>
+</div>
+
+<!-- NAV -->
+<nav class="vl-nav">
+  <div class="vl-nav-logo"><span class="dot"></span> VIBRA · LEJANA</div>
+  <div class="vl-nav-links">
+    <a href="#sobre">Sobre</a>
+    <a href="#banda">La Banda</a>
+    <a href="#setlist">Qué Cantamos</a>
+    <a href="#demos">Demos &amp; Ensayos</a>
+    <a href="#fechas">Fechas</a>
+    <a href="#booking">Reserva</a>
+  </div>
+  <a class="vl-nav-cta" href="#booking">Reservar →</a>
+  <button class="vl-nav-hamburger" id="nav-hamburger" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<header class="vl-hero">
+  <div class="vl-hero-vinyl" id="vinyl">
+    <div class="vinyl"><div class="vinyl-shine"></div></div>
+  </div>
+  <div class="vl-hero-content" id="hero-content">
+    <div class="vl-hero-marquee">
+      <span class="bar"></span>
+      <span class="red-dot"></span>
+      <span>SIDE A · 33⅓ RPM</span>
+      <span class="red-dot"></span>
+      <span class="bar"></span>
+    </div>
+    <h1 class="vl-hero-title">
+      <span id="vibra-letters"></span>
+      <span class="lejana"><span style="display:inline-block;">LEJANA</span></span>
+    </h1>
+    <div class="vl-hero-slogan">— Sentí la vibra —</div>
+    <div class="vl-hero-meta">
+      <span><span class="red">●</span> EST. MMXXV</span>
+      <span>ASUNCIÓN · PARAGUAY</span>
+      <span class="red">ROCK · COVERS · EN VIVO</span>
+    </div>
+  </div>
+  <div class="vl-hero-scroll">
+    <span>SCROLL</span>
+    <div class="line"></div>
+  </div>
+</header>
+
+<!-- WAVEFORM -->
+<div class="vl-waveform" id="wave1"></div>
+
+<!-- SOBRE -->
+<section class="vl-section vl-sobre" id="sobre">
+  <div class="vl-section-header">
+    <span class="vl-section-num">01 / 05</span>
+    <h2 class="vl-section-title">Sobre la banda</h2>
+    <span class="vl-section-meta">Track A1</span>
+  </div>
+  <div class="vl-sobre-grid">
+    <div class="vl-sobre-lead">
+      Cinco músicos. <em class="red">Una vibra.</em><br>
+      Covers de rock clásico que vibran lejos<br>
+      pero pegan <em>cerca</em>.
+    </div>
+    <div>
+      <div class="vl-sobre-text" id="sobre-text"></div>
+      <div class="vl-sobre-stats" id="sobre-stats"></div>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRANTES -->
+<section class="vl-section vl-band" id="banda">
+  <div class="vl-section-header">
+    <span class="vl-section-num">02 / 05</span>
+    <h2 class="vl-section-title">La Banda</h2>
+    <span class="vl-section-meta">Hover para conocer</span>
+  </div>
+  <div class="vl-band-grid" id="band-grid"></div>
+</section>
+
+<!-- SETLIST -->
+<section class="vl-section vl-setlist" id="setlist">
+  <div class="vl-section-header">
+    <span class="vl-section-num">03 / 05</span>
+    <h2 class="vl-section-title">Qué Cantamos</h2>
+    <span class="vl-section-meta">17 tracks · viaje emocional</span>
+  </div>
+  <div class="vl-setlist-meta">
+    <span>17 TRACKS</span>
+    <span>·</span>
+    <span>VIAJE EMOCIONAL</span>
+    <span>·</span>
+    <span style="color:var(--red);">APERTURA → CIERRE</span>
+  </div>
+  <div class="vl-setlist-table" id="setlist-table"></div>
+</section>
+
+<!-- DEMOS -->
+<section class="vl-section vl-demos" id="demos">
+  <div class="vl-section-header">
+    <span class="vl-section-num">04 / 05</span>
+    <h2 class="vl-section-title">Demos &amp; Ensayos</h2>
+    <span class="vl-section-meta">Audio + video · Sala de ensayo</span>
+  </div>
+  <div class="vl-demos-cols">
+    <div>
+      <div class="vl-demos-label"><span class="dot"></span> AUDIO</div>
+      <div class="vl-demos-list" id="demos-list"></div>
+    </div>
+    <div>
+      <div class="vl-demos-label"><span class="dot"></span> VIDEO</div>
+      <div class="vl-carousel-wrap">
+        <div class="vl-carousel" id="videos-carousel"></div>
+        <div class="vl-carousel-arrows">
+          <button class="carousel-arrow" id="carousel-prev" aria-label="Anterior">&#8592;</button>
+          <button class="carousel-arrow" id="carousel-next" aria-label="Siguiente">&#8594;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FECHAS -->
+<section class="vl-section vl-fechas" id="fechas">
+  <div class="vl-section-header">
+    <span class="vl-section-num">05 / 05</span>
+    <h2 class="vl-section-title">Próximas Fechas</h2>
+    <span class="vl-section-meta">Otoño-invierno 2026</span>
+  </div>
+  <div class="vl-fechas-list" id="fechas-list"></div>
+</section>
+
+<!-- BOOKING -->
+<section class="vl-booking" id="booking">
+  <div class="vl-booking-grid">
+    <div>
+      <h2 class="vl-booking-title">Reservá<br><em>la banda.</em></h2>
+      <p class="vl-booking-sub">Bares, cumpleaños, eventos privados, festivales. Si querés que la noche tenga banda en vivo — escribinos.</p>
+      <button class="vl-booking-cta" id="open-booking" type="button">Pedir presupuesto →</button>
+    </div>
+    <div class="vl-booking-contact">
+      <div>
+        <div class="label">Reservas</div>
+        <a href="mailto:ruben@vibralejana.com">ruben@vibralejana.com</a>
+      </div>
+      <div>
+        <div class="label">WhatsApp</div>
+        <a href="https://wa.me/595971185507">+595 971 185 507</a>
+      </div>
+      <div>
+        <div class="label">Instagram</div>
+        <a href="https://www.instagram.com/vibralejana" target="_blank" rel="noopener">@vibralejana</a>
+      </div>
+      <div>
+        <div class="label">YouTube</div>
+        <a href="https://www.youtube.com/@vibralejana" target="_blank" rel="noopener">@vibralejana</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AUDIO PLAYER BAR -->
+<div id="vl-player">
+  <div class="player-info">
+    <div class="player-title" id="player-title">—</div>
+    <div class="player-sub" id="player-sub">SALA DE ENSAYO</div>
+  </div>
+  <button class="player-btn" id="player-play-btn" aria-label="Play/Pause"></button>
+  <div class="player-progress">
+    <span class="player-time" id="player-current">0:00</span>
+    <div class="player-bar-wrap" id="player-bar-wrap">
+      <div class="player-bar-fill" id="player-bar-fill"></div>
+    </div>
+    <span class="player-time" id="player-duration">0:00</span>
+  </div>
+  <button class="player-close" id="player-close">✕</button>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="vl-lightbox" class="vl-lightbox">
+  <div class="vl-lightbox-backdrop" id="lightbox-backdrop"></div>
+  <div class="vl-lightbox-content">
+    <button class="vl-lightbox-close" id="lightbox-close">✕</button>
+    <div class="vl-lightbox-iframe-wrap">
+      <iframe id="lightbox-iframe" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING MODAL -->
+<div class="bk-overlay" id="bk-overlay">
+  <div class="bk-backdrop" id="bk-backdrop"></div>
+  <div class="bk-modal" role="dialog" aria-modal="true" aria-labelledby="bk-modal-title">
+    <button class="bk-close" id="bk-close" aria-label="Cerrar">✕</button>
+
+    <!-- Formulario -->
+    <div id="bk-form-wrap">
+      <div class="bk-title" id="bk-modal-title">Reservá<br><span style="font-weight:300;color:var(--red);">la banda.</span></div>
+      <div class="bk-subtitle">Completá el formulario y te respondemos en 24 hs</div>
+
+      <form id="bk-form" novalidate>
+        <div class="bk-row">
+          <div class="bk-field">
+            <label class="bk-label" for="bk-nombre">Nombre completo *</label>
+            <input class="bk-input" type="text" id="bk-nombre" name="nombre" placeholder="Tu nombre" required>
+          </div>
+          <div class="bk-field">
+            <label class="bk-label" for="bk-email">Email *</label>
+            <input class="bk-input" type="email" id="bk-email" name="email" placeholder="tu@email.com" required>
+          </div>
+        </div>
+        <div class="bk-row">
+          <div class="bk-field">
+            <label class="bk-label" for="bk-telefono">Teléfono / WhatsApp</label>
+            <input class="bk-input" type="tel" id="bk-telefono" name="telefono" placeholder="+595 9xx xxx xxx">
+          </div>
+          <div class="bk-field">
+            <label class="bk-label" for="bk-tipo">Tipo de evento *</label>
+            <select class="bk-select" id="bk-tipo" name="tipo_evento" required>
+              <option value="" disabled selected>Seleccioná</option>
+              <option>Bar / Pub</option>
+              <option>Cumpleaños</option>
+              <option>Evento privado</option>
+              <option>Festival</option>
+              <option>Boda / Fiesta</option>
+              <option>Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="bk-field">
+          <label class="bk-label" for="bk-fecha">Fecha tentativa</label>
+          <input class="bk-input" type="date" id="bk-fecha" name="fecha">
+        </div>
+        <div class="bk-field">
+          <label class="bk-label" for="bk-mensaje">Mensaje / Detalles</label>
+          <textarea class="bk-textarea" id="bk-mensaje" name="mensaje" placeholder="Contanos sobre el evento, lugar, horario, cantidad de personas..."></textarea>
+        </div>
+
+        <div class="bk-error" id="bk-error"></div>
+        <button class="bk-submit" type="submit" id="bk-submit">Enviar solicitud →</button>
+      </form>
+    </div>
+
+    <!-- Estado de éxito -->
+    <div class="bk-success" id="bk-success">
+      <div class="bk-success-icon">✓</div>
+      <div class="bk-success-title">¡Mensaje enviado!</div>
+      <p class="bk-success-msg">
+        Recibimos tu consulta. Te respondemos a la brevedad<br>
+        a <strong id="bk-confirm-email"></strong>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="vl-footer">
+  <div class="vl-footer-top">
+    <div class="vl-footer-logo">VIBRA<span class="l">— LEJANA —</span></div>
+    <div class="vl-footer-social">
+      <a href="https://www.instagram.com/vibralejana" target="_blank" rel="noopener">IG</a>
+      <a href="https://www.youtube.com/@vibralejana" target="_blank" rel="noopener">YT</a>
+      <a href="https://wa.me/595971185507" target="_blank" rel="noopener">WA</a>
+    </div>
+  </div>
+  <div class="vl-footer-bottom">
+    <span>© MMXXVI — VIBRA LEJANA</span>
+    <span>HECHO EN ASUNCIÓN, PARAGUAY</span>
+    <span>SIDE A / B — TODAS LAS PISTAS RESERVADAS</span>
+  </div>
+</footer>
+
+<script>
+// ── DATOS INLINE ──
+const D = {
+  manifiesto: [
+    "Tocamos lo que sentimos. Lo que sonó en una cassette gastada, en un viaje en colectivo, en un cumpleaños que duró hasta las seis.",
+    "Ruben pone la escena, Charlie pone la armonía, Ale el pulso, Kike el grave, Oscar los solos. Sin atajos, sin disfraces — solo el rock que conocemos de memoria, hecho con manos propias."
+  ],
+  stats: [
+    { num: "01", label: "Banda" },
+    { num: "20", label: "Canciones" },
+    { num: "∞",  label: "Posibilidades" }
+  ],
+  integrantes: [
+    { nombre: "Rubén Giménez",  rol: "Líder · Vocalista · Guitarras", side: "A1", bio: "Voz potente, presencia escénica y la conexión directa con el público." },
+    { nombre: "Ale Aquino",     rol: "Batería",                   side: "A2", bio: "El motor rítmico. Pulso firme y groove que sostiene cada tema de principio a fin." },
+    { nombre: "Kike",           rol: "Bajo",                      side: "B1", bio: "La frecuencia que mueve el cuerpo antes que el oído. Bajo en el pecho, pies en el piso." },
+    { nombre: "Charlie Betti",  rol: "Teclados · Voz · Coros",   side: "B2", bio: "Texturas, armonías y segundas voces. Aporta el color que diferencia a un cover de una versión propia." },
+    { nombre: "Oscar López B.", rol: "Guitarra líder",            side: "B3", bio: "Solos que cortan y riffs que arman la fiesta. La voz de la guitarra que el público canta junto a la voz." }
+  ],
+  setlist: [
+    { n:  1, tema: "Loco (Tu Forma de Ser)",    artista: "Auténticos Decadentes", mood: "🔥", rol: "Arranque bailable — rompe el hielo" },
+    { n:  2, tema: "Clavado en un Bar",          artista: "Maná",                  mood: "🔥", rol: "Mantiene la energía, muy conocida" },
+    { n:  3, tema: "Persiana Americana",         artista: "Soda Stereo",           mood: "🔥", rol: "Clásico infaltable" },
+    { n:  4, tema: "Arranca Corazones",          artista: "Ataque 77",             mood: "🔥", rol: "Punk rock — sacude al público" },
+    { n:  5, tema: "Solito",                     artista: "Salamandra",            mood: "⚡", rol: "Baja un poco pero sigue fuerte" },
+    { n:  6, tema: "Rayando el Sol",             artista: "Maná",                  mood: "❤️", rol: "Primer momento emotivo" },
+    { n:  7, tema: "Ana Julia",                  artista: "Los Hermanos",          mood: "❤️", rol: "Romántico, baja dulcemente" },
+    { n:  8, tema: "Crimen",                     artista: "Gustavo Cerati",        mood: "🌙", rol: "Íntimo — teclado protagonista" },
+    { n:  9, tema: "Creep",                      artista: "Radiohead",             mood: "🌙", rol: "Oscuro y emotivo" },
+    { n: 10, tema: "Tempo Perdido",              artista: "Legião Urbana",         mood: "🌙", rol: "Toque especial en portugués" },
+    { n: 11, tema: "Cuando Pase el Temblor",     artista: "Soda Stereo",           mood: "⚡", rol: "Reactiva con nostalgia" },
+    { n: 12, tema: "Hotel California",           artista: "Eagles",                mood: "🎸", rol: "Versión acústica — todos escuchan" },
+    { n: 13, tema: "Cae el Sol",                 artista: "Airbag",                mood: "❤️", rol: "Emotiva, nostalgia pura" },
+    { n: 14, tema: "Oye Mi Amor",                artista: "Maná",                  mood: "⚡", rol: "Sube energía rumbo al cierre" },
+    { n: 15, tema: "Mariposa Technicolor",       artista: "Fito Páez",             mood: "🌟", rol: "Emotivo y grandioso" },
+    { n: 16, tema: "Hacelo Por Mí",              artista: "Ataque 77",             mood: "🎭", rol: "Penúltima — el público pide otra" },
+    { n: 17, tema: "De Música Ligera",           artista: "Soda Stereo",           mood: "🏁", rol: "CIERRE ÉPICO — el himno final" }
+  ],
+  fechas: [
+    { dia: "14", mes: "JUN", anio: "2026", lugar: "Bar Britannia",           ciudad: "Asunción · PY", hora: "21:30", estado: "CONFIRMADO",    tipo: "Show abierto" },
+    { dia: "27", mes: "JUN", anio: "2026", lugar: "Patio Maní",              ciudad: "Asunción · PY", hora: "22:00", estado: "CONFIRMADO",    tipo: "Noche acústica" },
+    { dia: "11", mes: "JUL", anio: "2026", lugar: "Cumple 40 — Privado",    ciudad: "Lambaré · PY",  hora: "23:00", estado: "BOOKED",         tipo: "Evento privado" },
+    { dia: "02", mes: "AGO", anio: "2026", lugar: "Festival Barrial Sajonia",ciudad: "Asunción · PY", hora: "20:00", estado: "POR CONFIRMAR", tipo: "Festival al aire libre" },
+    { dia: "23", mes: "AGO", anio: "2026", lugar: "Sala del Cabildo",        ciudad: "Asunción · PY", hora: "21:00", estado: "POR CONFIRMAR", tipo: "Show con apertura" }
+  ],
+  demos: [
+    { titulo: "Rayando el Sol",      subtitulo: "Sala de Ensayo · 03/2026", duracion: "4:32", audioFile: "assets/audio/rayando-el-sol.mp3" },
+    { titulo: "Creep",               subtitulo: "Sala de Ensayo · 03/2026", duracion: "4:48", audioFile: "assets/audio/creep.mp3" },
+    { titulo: "De Música Ligera",    subtitulo: "Sala de Ensayo · 04/2026", duracion: "5:12", audioFile: "assets/audio/de-musica-ligera.mp3" },
+    { titulo: "Persiana Americana",  subtitulo: "Sala de Ensayo · 04/2026", duracion: "4:05", audioFile: "assets/audio/persiana-americana.mp3" }
+  ],
+  videos: [
+    { titulo: "Loco (Tu Forma de Ser)",  subtitulo: "Sala de Ensayo · 03/2026", duracion: "3:48", videoId: "8lbsQyMhMT8" },
+    { titulo: "De Música Ligera",        subtitulo: "Sala de Ensayo · 04/2026", duracion: "5:12", videoId: "8lbsQyMhMT8" },
+    { titulo: "Hotel California",        subtitulo: "Sala de Ensayo · 04/2026", duracion: "6:30", videoId: "8lbsQyMhMT8" },
+    { titulo: "Persiana Americana",      subtitulo: "Sala de Ensayo · 04/2026", duracion: "4:05", videoId: "8lbsQyMhMT8" }
+  ]
+};
+
+(() => {
+  // ── INTRO ──
+  const introEl = document.getElementById("vl-intro");
+  let introDone = false;
+
+  // Bloquear scroll mientras dura el intro
+  document.body.style.overflow = "hidden";
+
+  function dismissIntro() {
+    if (introDone) return;
+    introDone = true;
+    introEl.classList.add("hidden");
+    parallaxY = 0;
+    document.body.style.overflow = "";
+  }
+
+  // El intro dura exactamente lo que tardan las animaciones (~4.2s)
+  setTimeout(dismissIntro, 4200);
+
+  // ── VIBRA LETTERS ──
+  document.getElementById("vibra-letters").innerHTML = "VIBRA".split("").map(l =>
+    `<span class="vl-hero-letter">${l}</span>`
+  ).join("");
+
+  // ── CURSOR ──
+  const cursor = document.getElementById("vl-cursor");
+  document.addEventListener("mousemove", (e) => {
+    cursor.style.left = e.clientX + "px";
+    cursor.style.top  = e.clientY + "px";
+    if (Math.random() > 0.7) {
+      const t = document.createElement("div");
+      t.className = "vl-cursor-trail";
+      t.style.left = e.clientX + "px";
+      t.style.top  = e.clientY + "px";
+      document.body.appendChild(t);
+      setTimeout(() => { t.style.opacity = 0; }, 50);
+      setTimeout(() => t.remove(), 500);
+    }
+  });
+  document.querySelectorAll("a, button, .vl-track, .vl-member, .vl-demo").forEach(el => {
+    el.addEventListener("mouseenter", () => cursor.classList.add("hover"));
+    el.addEventListener("mouseleave", () => cursor.classList.remove("hover"));
+  });
+
+  // ── VINYL ROTATION ──
+  const vinyl = document.getElementById("vinyl");
+  let rotation = 0, velocity = 0.3, targetVelocity = 0.3;
+  let parallaxY = 0;
+
+  function animateVinyl() {
+    rotation += velocity;
+    velocity += (targetVelocity - velocity) * 0.08;
+    vinyl.style.transform = `translate(-50%, -50%) translateY(${parallaxY}vh) rotate(${rotation}deg)`;
+    requestAnimationFrame(animateVinyl);
+  }
+  animateVinyl();
+
+  let lastScroll = 0;
+  window.addEventListener("scroll", () => {
+    if (!introDone) return;
+    const diff = window.scrollY - lastScroll;
+    targetVelocity = 0.3 + Math.abs(diff) * 0.5;
+    setTimeout(() => { targetVelocity = 0.3; }, 120);
+    lastScroll = window.scrollY;
+  }, { passive: true });
+
+  // ── WAVEFORM ──
+  const wave1 = document.getElementById("wave1");
+  const N = 80; let waveHTML = "";
+  for (let i = 0; i < N; i++) {
+    const h = 8 + Math.abs(Math.sin(i * 0.4) + Math.sin(i * 0.13)) * 28;
+    const isRed = i === 39 || i === 40 || i === 41;
+    waveHTML += `<span class="bar ${isRed ? 'red' : ''}" style="height:${h}px"></span>`;
+  }
+  wave1.innerHTML = waveHTML;
+
+  // ── SOBRE ──
+  document.getElementById("sobre-text").innerHTML = D.manifiesto.map(p =>
+    `<p>${p}</p>`
+  ).join("");
+  document.getElementById("sobre-stats").innerHTML = D.stats.map(s => `
+    <div>
+      <div class="vl-stat-num">${s.num}</div>
+      <div class="vl-stat-label">${s.label}</div>
+    </div>
+  `).join("");
+
+  // ── BANDA ──
+  document.getElementById("band-grid").innerHTML = D.integrantes.map(m => `
+    <div class="vl-member">
+      <div class="vl-member-inner">
+        <div class="vl-member-face vl-member-front">
+          <div class="vl-member-side">SIDE ${m.side}</div>
+          <div class="vl-member-photo-placeholder">[ FOTO PRÓXIMAMENTE ]</div>
+          <div>
+            <div class="vl-member-name">${m.nombre}</div>
+            <div class="vl-member-rol">${m.rol}</div>
+          </div>
+        </div>
+        <div class="vl-member-face vl-member-back">
+          <div class="label">SIDE ${m.side} · BIO</div>
+          <div class="vl-member-bio">${m.bio}</div>
+          <div class="label" style="opacity:0.7;">VIBRA LEJANA</div>
+        </div>
+      </div>
+    </div>
+  `).join("");
+
+  // ── SETLIST ──
+  document.getElementById("setlist-table").innerHTML = D.setlist.map(t => `
+    <div class="vl-track">
+      <div class="vl-track-num">${String(t.n).padStart(2, "0")}</div>
+      <div class="vl-track-title">${t.tema}</div>
+      <div class="vl-track-artist">${t.artista}</div>
+    </div>
+  `).join("");
+
+  // ── DEMOS AUDIO ──
+  document.getElementById("demos-list").innerHTML = D.demos.map((d, idx) => {
+    let bars = "";
+    for (let i = 0; i < 60; i++) {
+      const h = 6 + Math.abs(Math.sin(i * 0.3 + idx) + Math.cos(i * 0.5 + idx * 2)) * 18;
+      bars += `<span class="b" style="height:${h}px"></span>`;
+    }
+    return `
+      <div class="vl-demo" data-audio="${d.audioFile}" data-title="${d.titulo}" data-sub="${d.subtitulo}">
+        <div class="vl-demo-play"></div>
+        <div>
+          <div class="vl-demo-title">${d.titulo}</div>
+          <div class="vl-demo-sub">${d.subtitulo}</div>
+        </div>
+        <div class="vl-demo-wave">${bars}</div>
+        <div class="vl-demo-time">${d.duracion}</div>
+      </div>
+    `;
+  }).join("");
+
+  // ── PLAYER BAR ──
+  let currentAudio = null;
+  let currentPlayBtn = null;
+  const playerBar    = document.getElementById("vl-player");
+  const playerTitle  = document.getElementById("player-title");
+  const playerSub    = document.getElementById("player-sub");
+  const playerPlayBtn= document.getElementById("player-play-btn");
+  const playerBarWrap= document.getElementById("player-bar-wrap");
+  const playerBarFill= document.getElementById("player-bar-fill");
+  const playerCurrent= document.getElementById("player-current");
+  const playerDurEl  = document.getElementById("player-duration");
+
+  function fmt(s) {
+    const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+    return `${m}:${String(sec).padStart(2,"0")}`;
+  }
+  function setPlaying(on) {
+    on ? playerPlayBtn.classList.add("playing") : playerPlayBtn.classList.remove("playing");
+  }
+  function stopCurrent() {
+    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+    currentPlayBtn && currentPlayBtn.classList.remove("playing");
+    currentAudio = null; currentPlayBtn = null;
+    setPlaying(false);
+    playerBarFill.style.width = "0%";
+    playerCurrent.textContent = "0:00";
+  }
+
+  playerPlayBtn.addEventListener("click", () => {
+    if (!currentAudio) return;
+    if (currentAudio.paused) {
+      currentAudio.play();
+      setPlaying(true);
+      currentPlayBtn && currentPlayBtn.classList.add("playing");
+    } else {
+      currentAudio.pause();
+      setPlaying(false);
+      currentPlayBtn && currentPlayBtn.classList.remove("playing");
+    }
+  });
+
+  playerBarWrap.addEventListener("click", (e) => {
+    if (!currentAudio || !currentAudio.duration) return;
+    const r = playerBarWrap.getBoundingClientRect();
+    currentAudio.currentTime = ((e.clientX - r.left) / r.width) * currentAudio.duration;
+  });
+
+  document.getElementById("player-close").addEventListener("click", () => {
+    stopCurrent();
+    playerBar.classList.remove("visible");
+  });
+
+  document.querySelectorAll(".vl-demo-play").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const demo = btn.closest(".vl-demo");
+      const src  = demo.dataset.audio;
+
+      if (currentAudio && !currentAudio.paused) {
+        const same = currentPlayBtn === btn;
+        stopCurrent();
+        if (same) { playerBar.classList.remove("visible"); return; }
+      }
+
+      currentAudio = new Audio(src);
+      currentPlayBtn = btn;
+      btn.classList.add("playing");
+
+      playerTitle.textContent = demo.dataset.title;
+      playerSub.textContent   = demo.dataset.sub;
+      playerBar.classList.add("visible");
+      setPlaying(true);
+
+      currentAudio.addEventListener("loadedmetadata", () => {
+        playerDurEl.textContent = fmt(currentAudio.duration);
+      });
+      currentAudio.addEventListener("timeupdate", () => {
+        if (!currentAudio.duration) return;
+        playerBarFill.style.width = (currentAudio.currentTime / currentAudio.duration * 100) + "%";
+        playerCurrent.textContent = fmt(currentAudio.currentTime);
+      });
+      currentAudio.addEventListener("ended", () => {
+        btn.classList.remove("playing");
+        setPlaying(false);
+        playerBarFill.style.width = "0%";
+        playerCurrent.textContent = "0:00";
+        currentAudio = null; currentPlayBtn = null;
+      });
+
+      currentAudio.play().catch(() => {});
+    });
+  });
+
+  // ── VIDEOS CAROUSEL ──
+  const videoCarousel = document.getElementById("videos-carousel");
+  videoCarousel.innerHTML = D.videos.map(v => `
+    <div class="vl-carousel-item">
+      <div class="vl-yt-card" data-video-id="${v.videoId}" style="cursor:pointer;">
+        <div class="vl-yt-thumb">
+          <img src="https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg" alt="${v.titulo}" loading="lazy" onerror="this.style.display='none'">
+          <div class="vl-yt-play"></div>
+          <span class="vl-yt-badge">YT</span>
+          <span class="vl-yt-duration">${v.duracion}</span>
+        </div>
+        <div class="vl-yt-info">
+          <div class="vl-yt-title">${v.titulo}</div>
+          <div class="vl-yt-sub">${v.subtitulo}</div>
+        </div>
+      </div>
+    </div>
+  `).join("");
+
+  // Open lightbox on card click
+  videoCarousel.querySelectorAll(".vl-yt-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const vid = card.dataset.videoId;
+      document.getElementById("lightbox-iframe").src =
+        `https://www.youtube.com/embed/${vid}?autoplay=1&rel=0`;
+      document.getElementById("vl-lightbox").classList.add("open");
+    });
+  });
+
+  // Carousel navigation
+  document.getElementById("carousel-prev").addEventListener("click", () => {
+    const w = videoCarousel.querySelector(".vl-carousel-item").offsetWidth + 16;
+    videoCarousel.scrollBy({ left: -w, behavior: "smooth" });
+  });
+  document.getElementById("carousel-next").addEventListener("click", () => {
+    const w = videoCarousel.querySelector(".vl-carousel-item").offsetWidth + 16;
+    videoCarousel.scrollBy({ left: w, behavior: "smooth" });
+  });
+
+  // ── LIGHTBOX CLOSE ──
+  function closeLightbox() {
+    document.getElementById("lightbox-iframe").src = "";
+    document.getElementById("vl-lightbox").classList.remove("open");
+  }
+  document.getElementById("lightbox-close").addEventListener("click", closeLightbox);
+  document.getElementById("lightbox-backdrop").addEventListener("click", closeLightbox);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeLightbox(); });
+
+  // ── FECHAS ──
+  document.getElementById("fechas-list").innerHTML = D.fechas.map(f => {
+    const stClass = f.estado.toLowerCase().replace(/\s+/g, '');
+    return `
+      <div class="vl-fecha">
+        <div class="vl-fecha-date">
+          <div class="vl-fecha-day">${f.dia}</div>
+          <div class="vl-fecha-mes">${f.mes} · ${f.anio}</div>
+        </div>
+        <div>
+          <div class="vl-fecha-info-lugar">${f.lugar}</div>
+          <div class="vl-fecha-info-meta">${f.ciudad} · ${f.hora} hs · ${f.tipo}</div>
+        </div>
+        <div class="vl-fecha-status ${stClass}">${f.estado}</div>
+        <a class="vl-fecha-cta" href="#booking">Más info →</a>
+      </div>
+    `;
+  }).join("");
+
+  // Re-bind cursor hover for dynamic content
+  document.querySelectorAll(".vl-track, .vl-member, .vl-demo, .vl-fecha-cta, .vl-yt-card, .carousel-arrow").forEach(el => {
+    el.addEventListener("mouseenter", () => cursor.classList.add("hover"));
+    el.addEventListener("mouseleave", () => cursor.classList.remove("hover"));
+  });
+
+  if ('ontouchstart' in window) {
+    document.body.style.cursor = 'auto';
+    cursor.style.display = 'none';
+  }
+
+  // ── PRECARGAR SEGUNDO DEMO AL TERMINAR EL INTRO ──
+  (function preloadDemo() {
+    const demo = D.demos[1];
+    currentAudio   = new Audio(demo.audioFile);
+    currentPlayBtn = document.querySelectorAll(".vl-demo-play")[1] || null;
+
+    playerTitle.textContent = demo.titulo;
+    playerSub.textContent   = demo.subtitulo;
+    playerBar.classList.add("visible");
+
+    currentAudio.addEventListener("loadedmetadata", () => {
+      playerDurEl.textContent = fmt(currentAudio.duration);
+    });
+    currentAudio.addEventListener("timeupdate", () => {
+      if (!currentAudio.duration) return;
+      playerBarFill.style.width = (currentAudio.currentTime / currentAudio.duration * 100) + "%";
+      playerCurrent.textContent = fmt(currentAudio.currentTime);
+    });
+    currentAudio.addEventListener("ended", () => {
+      currentPlayBtn && currentPlayBtn.classList.remove("playing");
+      setPlaying(false);
+      playerBarFill.style.width = "0%";
+      playerCurrent.textContent = "0:00";
+      currentAudio = null; currentPlayBtn = null;
+    });
+  })();
+
+  // ── BOOKING MODAL ──
+  const bkOverlay = document.getElementById("bk-overlay");
+  const bkError   = document.getElementById("bk-error");
+  const bkSubmit  = document.getElementById("bk-submit");
+  const bkSuccess = document.getElementById("bk-success");
+  const bkFormWrap= document.getElementById("bk-form-wrap");
+
+  function openBooking() {
+    bkOverlay.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  function closeBooking() {
+    bkOverlay.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+
+  document.getElementById("open-booking").addEventListener("click", openBooking);
+  document.getElementById("bk-close").addEventListener("click", closeBooking);
+  document.getElementById("bk-backdrop").addEventListener("click", closeBooking);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeBooking(); });
+
+  document.getElementById("bk-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    bkError.classList.remove("show");
+
+    const form   = e.target;
+    const email  = form.email.value.trim();
+    const nombre = form.nombre.value.trim();
+
+    if (!nombre || !email || !form.tipo_evento.value) {
+      bkError.textContent = "Completá los campos obligatorios (*).";
+      bkError.classList.add("show");
+      return;
+    }
+
+    bkSubmit.disabled = true;
+    bkSubmit.textContent = "Enviando...";
+
+    const formData = new FormData();
+    formData.append("access_key", "d9d9d9be-e8a8-4005-af3c-71ead01b2d72");
+    formData.append("name",       nombre);
+    formData.append("email",      email);
+    formData.append("telefono",   form.telefono.value);
+    formData.append("tipo_evento",form.tipo_evento.value);
+    formData.append("fecha",      form.fecha.value);
+    formData.append("message",    form.mensaje.value);
+    formData.append("subject",    `Reserva Vibra Lejana — ${form.tipo_evento.value} — ${nombre}`);
+    formData.append("from_name",  "vibralejana.com");
+
+    try {
+      const res  = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData
+      });
+      const json = await res.json();
+      if (json.success) {
+        bkFormWrap.style.display = "none";
+        document.getElementById("bk-confirm-email").textContent = email;
+        bkSuccess.classList.add("show");
+      } else {
+        throw new Error(json.message || "Error");
+      }
+    } catch (err) {
+      bkError.textContent = "Hubo un error al enviar. Intentá de nuevo o escribinos por WhatsApp.";
+      bkError.classList.add("show");
+      bkSubmit.disabled = false;
+      bkSubmit.textContent = "Enviar solicitud →";
+    }
+  });
+
+  // ── HAMBURGER MENU ──
+  const hamburger  = document.getElementById("nav-hamburger");
+  const mobileMenu = document.getElementById("mobile-menu");
+
+  hamburger.addEventListener("click", () => {
+    hamburger.classList.toggle("open");
+    mobileMenu.classList.toggle("open");
+    document.body.style.overflow = mobileMenu.classList.contains("open") ? "hidden" : "";
+  });
+
+  document.querySelectorAll("[data-menu-link]").forEach(link => {
+    link.addEventListener("click", () => {
+      hamburger.classList.remove("open");
+      mobileMenu.classList.remove("open");
+      document.body.style.overflow = "";
+    });
+  });
+
+})();
+</script>
+
+</body>
+</html>

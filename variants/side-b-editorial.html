@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibra Lejana — Side B</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Fraunces:ital,wght@0,300;0,600;1,300;1,600&display=swap">
+<style>
+  :root {
+    --bone: #F2EBDC;
+    --bone-soft: #E8DFCD;
+    --black: #0B0908;
+    --black-soft: #161311;
+    --red: #C93030;
+    --red-deep: #8E1F1F;
+    --paper: #EAE2CD;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    background: var(--paper);
+    color: var(--black);
+    font-family: 'Space Grotesk', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
+    opacity: 0.06;
+    mix-blend-mode: multiply;
+  }
+  /* Cursor */
+  .vl-cursor {
+    position: fixed; width: 28px; height: 28px;
+    pointer-events: none; z-index: 10000;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s, height 0.2s, background 0.2s;
+    border-radius: 50%;
+    background: var(--red);
+    mix-blend-mode: multiply;
+  }
+  .vl-cursor::after {
+    content: ""; position: absolute; inset: 6px;
+    border-radius: 50%; background: var(--paper);
+  }
+  .vl-cursor.hover { width: 56px; height: 56px; }
+
+  /* Header — newspaper masthead */
+  .vl-masthead {
+    border-bottom: 4px double var(--black);
+    padding: 24px 40px 20px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+    position: sticky; top: 0;
+    background: var(--paper);
+    z-index: 100;
+  }
+  .vl-masthead-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    line-height: 1.6;
+  }
+  .vl-masthead-logo {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: 0.04em;
+    text-align: center;
+    line-height: 0.9;
+  }
+  .vl-masthead-logo .l {
+    display: block; font-weight: 300; letter-spacing: 0.3em;
+    font-size: 0.4em; margin-top: 4px;
+    color: var(--red);
+  }
+  .vl-masthead-nav {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    display: flex; justify-content: flex-end; gap: 18px; flex-wrap: wrap;
+  }
+  .vl-masthead-nav a { color: var(--black); text-decoration: none; border-bottom: 1px solid transparent; padding-bottom: 2px; }
+  .vl-masthead-nav a:hover { border-color: var(--red); }
+
+  /* HERO — editorial/newsstand */
+  .vl-hero {
+    padding: 60px 40px 40px;
+    border-bottom: 1px solid var(--black);
+    position: relative;
+  }
+  .vl-hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 40px;
+    align-items: end;
+  }
+  .vl-hero-side {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    line-height: 1.5;
+    border-left: 2px solid var(--red);
+    padding-left: 16px;
+  }
+  .vl-hero-side.right {
+    border-left: none;
+    border-right: 2px solid var(--red);
+    padding-left: 0;
+    padding-right: 16px;
+    text-align: right;
+  }
+  .vl-hero-side .label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 6px;
+    font-style: normal;
+  }
+  .vl-hero-title {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: clamp(72px, 14vw, 220px);
+    line-height: 0.82;
+    letter-spacing: -0.005em;
+    text-transform: uppercase;
+    text-align: center;
+    word-spacing: -0.05em;
+  }
+  .vl-hero-title .red { color: var(--red); font-style: italic; font-family: 'Fraunces', serif; font-weight: 600; letter-spacing: -0.02em; }
+
+  /* Big editorial waveform under title */
+  .vl-hero-wave {
+    margin-top: 40px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    overflow: hidden;
+  }
+  .vl-hero-wave .b {
+    flex: 1;
+    background: var(--black);
+    transition: background 0.3s;
+  }
+  .vl-hero-wave .b.red { background: var(--red); }
+  .vl-hero-tagline {
+    margin-top: 24px;
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: clamp(20px, 2.5vw, 32px);
+    font-weight: 300;
+    line-height: 1.3;
+  }
+  .vl-hero-tagline em { font-style: normal; font-weight: 600; color: var(--red); }
+
+  .vl-hero-bar {
+    margin-top: 40px;
+    padding: 14px 0;
+    border-top: 1px solid var(--black);
+    border-bottom: 1px solid var(--black);
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .vl-hero-bar .red { color: var(--red); }
+
+  /* SECTIONS */
+  section.vl-section { padding: 80px 40px; border-bottom: 1px solid var(--black); }
+  .vl-section-head {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 24px; align-items: end;
+    padding-bottom: 16px;
+    border-bottom: 4px double var(--black);
+    margin-bottom: 48px;
+  }
+  .vl-section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.3em;
+    color: var(--red);
+    text-transform: uppercase;
+  }
+  .vl-section-title {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: clamp(36px, 5vw, 64px);
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .vl-section-meta {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    opacity: 0.6;
+  }
+
+  /* SOBRE — newspaper columns */
+  .vl-sobre-cols {
+    columns: 3;
+    column-gap: 40px;
+    column-rule: 1px solid rgba(0,0,0,0.2);
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  .vl-sobre-cols p { margin-bottom: 16px; text-align: justify; hyphens: auto; }
+  .vl-sobre-cols p:first-child::first-letter {
+    font-family: 'Oswald', sans-serif;
+    font-size: 5em;
+    float: left;
+    line-height: 0.85;
+    font-weight: 700;
+    margin-right: 8px;
+    margin-top: 4px;
+    color: var(--red);
+  }
+  .vl-sobre-pull {
+    break-inside: avoid;
+    background: var(--black);
+    color: var(--paper);
+    padding: 24px;
+    margin: 16px 0;
+    font-family: 'Oswald', sans-serif;
+    font-size: 22px;
+    line-height: 1.15;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+  }
+  .vl-sobre-pull .red { color: var(--red); }
+
+  /* INTEGRANTES — concentric vinyl rings */
+  .vl-band-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    border-top: 1px solid var(--black);
+    border-left: 1px solid var(--black);
+  }
+  .vl-member {
+    aspect-ratio: 3/4;
+    background: var(--paper);
+    border-right: 1px solid var(--black);
+    border-bottom: 1px solid var(--black);
+    padding: 24px 18px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: none;
+    overflow: hidden;
+    transition: background 0.4s, color 0.4s;
+  }
+  .vl-member::before {
+    content: "";
+    position: absolute;
+    bottom: -40%; right: -40%;
+    width: 110%; aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 50%, var(--red) 0 6%, transparent 6.2%),
+      repeating-radial-gradient(circle at 50% 50%, transparent 0 4px, rgba(0,0,0,0.18) 4px 5px);
+    transition: transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.4s;
+    opacity: 0.5;
+  }
+  .vl-member:hover { background: var(--black); color: var(--paper); }
+  .vl-member:hover::before {
+    transform: translate(-30%, -60%) scale(1.3);
+    opacity: 1;
+  }
+  .vl-member-side {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--red);
+    z-index: 2;
+    position: relative;
+  }
+  .vl-member-name {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    text-transform: uppercase;
+    line-height: 1;
+    z-index: 2;
+    position: relative;
+  }
+  .vl-member-rol {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    line-height: 1.3;
+    margin-top: 8px;
+    z-index: 2;
+    position: relative;
+  }
+  .vl-member-bio {
+    font-size: 12px;
+    line-height: 1.5;
+    margin-top: 12px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease, margin-top 0.5s;
+    z-index: 2;
+    position: relative;
+  }
+  .vl-member:hover .vl-member-bio { max-height: 200px; }
+
+  /* SETLIST — vinyl tracklist style */
+  .vl-setlist-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--black);
+  }
+  .vl-side-label {
+    grid-column: 1 / -1;
+    background: var(--black);
+    color: var(--paper);
+    padding: 16px 24px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 20px;
+    align-items: center;
+  }
+  .vl-side-label .red { color: var(--red); }
+  .vl-track {
+    padding: 14px 20px;
+    border-top: 1px solid rgba(0,0,0,0.2);
+    cursor: none;
+    position: relative;
+    transition: background 0.2s;
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    gap: 16px;
+    align-items: center;
+  }
+  .vl-track:nth-child(odd) { border-right: 1px solid rgba(0,0,0,0.2); }
+  .vl-track:hover {
+    background: var(--red);
+    color: var(--paper);
+  }
+  .vl-track-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .vl-track-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .vl-track-artist {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 12px;
+    margin-top: 3px;
+    opacity: 0.7;
+  }
+  .vl-track:hover .vl-track-artist { opacity: 1; }
+  .vl-track-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+  }
+  .vl-track:hover .vl-track-time { opacity: 1; }
+  .vl-track-detail {
+    grid-column: 2 / -1;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 12px;
+    margin-top: 6px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s, margin-top 0.3s;
+  }
+  .vl-track:hover .vl-track-detail { max-height: 40px; margin-top: 6px; }
+
+  /* DEMOS */
+  .vl-demos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .vl-demo {
+    background: var(--paper);
+    border: 1px solid var(--black);
+    padding: 24px;
+    cursor: none;
+    transition: background 0.2s, color 0.2s;
+  }
+  .vl-demo:hover { background: var(--black); color: var(--paper); }
+  .vl-demo-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--red);
+  }
+  .vl-demo-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1;
+    margin-top: 12px;
+    text-transform: uppercase;
+  }
+  .vl-demo-sub {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 13px;
+    margin-top: 6px;
+  }
+  .vl-demo-wave {
+    height: 50px;
+    display: flex; align-items: center; gap: 2px;
+    margin: 20px 0;
+  }
+  .vl-demo-wave .b { flex: 1; background: var(--black); }
+  .vl-demo:hover .vl-demo-wave .b { background: var(--red); }
+  .vl-demo-bottom {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid currentColor;
+    padding-top: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+  }
+  .vl-demo-play { width: 14px; height: 14px; background: var(--red); border-radius: 50%; }
+
+  /* FECHAS — calendar tickets */
+  .vl-fechas-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--black);
+  }
+  .vl-fecha {
+    padding: 24px;
+    border-top: 1px solid var(--black);
+    cursor: none;
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 24px;
+    align-items: center;
+    transition: background 0.2s;
+  }
+  .vl-fecha:nth-child(1), .vl-fecha:nth-child(2) { border-top: none; }
+  .vl-fecha:nth-child(odd) { border-right: 1px solid var(--black); }
+  .vl-fecha:hover { background: var(--black); color: var(--paper); }
+  .vl-fecha-date {
+    border-right: 2px dashed currentColor;
+    padding-right: 18px;
+    font-family: 'Oswald', sans-serif;
+    text-align: center;
+  }
+  .vl-fecha-day { font-size: 56px; font-weight: 700; line-height: 0.9; color: var(--red); }
+  .vl-fecha-mes { font-size: 13px; letter-spacing: 0.25em; margin-top: 6px; }
+  .vl-fecha-lugar {
+    font-family: 'Oswald', sans-serif;
+    font-size: 22px;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .vl-fecha-meta {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 13px;
+    margin-top: 6px;
+  }
+  .vl-fecha-status {
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    display: inline-block;
+    padding: 4px 8px;
+    border: 1px solid currentColor;
+  }
+
+  /* BOOKING */
+  .vl-booking {
+    padding: 100px 40px;
+    background: var(--black);
+    color: var(--paper);
+    text-align: center;
+    border-bottom: none;
+  }
+  .vl-booking-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.3em;
+    color: var(--red);
+    margin-bottom: 20px;
+  }
+  .vl-booking-title {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: clamp(56px, 10vw, 160px);
+    line-height: 0.85;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+  }
+  .vl-booking-title em {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--red);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .vl-booking-sub {
+    margin-top: 24px;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 20px;
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.5;
+  }
+  .vl-booking-cta {
+    display: inline-block;
+    margin-top: 40px;
+    padding: 22px 48px;
+    background: var(--red);
+    color: var(--paper);
+    font-family: 'Oswald', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .vl-booking-cta:hover { background: var(--paper); color: var(--black); }
+  .vl-booking-contact {
+    margin-top: 48px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .vl-booking-contact a { color: var(--paper); text-decoration: none; opacity: 0.7; border-bottom: 1px solid currentColor; padding-bottom: 4px; }
+  .vl-booking-contact a:hover { opacity: 1; color: var(--red); }
+
+  /* Footer */
+  .vl-footer {
+    padding: 40px;
+    background: var(--paper);
+    border-top: 4px double var(--black);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 1000px) {
+    .vl-band-grid, .vl-demos-grid { grid-template-columns: repeat(2, 1fr); }
+    .vl-sobre-cols { columns: 2; }
+  }
+  @media (max-width: 700px) {
+    .vl-masthead { grid-template-columns: 1fr; text-align: center; }
+    .vl-masthead-meta, .vl-masthead-nav { text-align: center; justify-content: center; }
+    .vl-hero-grid { grid-template-columns: 1fr; }
+    .vl-hero-side, .vl-hero-side.right { border: none; padding: 0; text-align: center; }
+    .vl-band-grid, .vl-demos-grid, .vl-fechas-grid, .vl-setlist-grid { grid-template-columns: 1fr; }
+    .vl-track:nth-child(odd) { border-right: none; }
+    .vl-fecha:nth-child(odd) { border-right: none; }
+    .vl-fecha:nth-child(2) { border-top: 1px solid var(--black); }
+    .vl-sobre-cols { columns: 1; }
+    .vl-section-head { grid-template-columns: 1fr; gap: 8px; }
+    section.vl-section, .vl-booking { padding: 60px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="vl-cursor" id="cursor"></div>
+
+<header class="vl-masthead">
+  <div class="vl-masthead-meta">
+    VOL. 1 · No. 01<br>
+    SÁBADO · 2026
+  </div>
+  <div class="vl-masthead-logo">VIBRA LEJANA<span class="l">— ROCK EN VIVO —</span></div>
+  <div class="vl-masthead-nav">
+    <a href="#sobre">SOBRE</a>
+    <a href="#banda">BANDA</a>
+    <a href="#setlist">SETLIST</a>
+    <a href="#fechas">FECHAS</a>
+    <a href="#booking">BOOKING</a>
+  </div>
+</header>
+
+<section class="vl-hero">
+  <div class="vl-hero-grid">
+    <div class="vl-hero-side">
+      <span class="label">— MANIFIESTO —</span>
+      Cinco amigos, una vibra. Tocamos los temas que sonaron en cassettes gastadas, en colectivos viejos, en cumpleaños que duran hasta las seis.
+    </div>
+    <h1 class="vl-hero-title">Vibra <span class="red">Lejana</span></h1>
+    <div class="vl-hero-side right">
+      <span class="label">— EDICIÓN MMXXV —</span>
+      Asunción · Paraguay. Covers de rock en castellano. Ensayos los sábados. Shows donde haya un escenario.
+    </div>
+  </div>
+  <div class="vl-hero-wave" id="hero-wave"></div>
+  <div class="vl-hero-tagline">
+    El rock que <em>sentimos</em>, hecho para que lo <em>bailes</em>.
+  </div>
+  <div class="vl-hero-bar">
+    <span>EST. MMXXV</span>
+    <span class="red">17 TRACKS · UN SETLIST</span>
+    <span>SIDE B / EDICIÓN ESPECIAL</span>
+    <span>33⅓ RPM</span>
+  </div>
+</section>
+
+<section class="vl-section" id="sobre">
+  <div class="vl-section-head">
+    <span class="vl-section-num">N° 01</span>
+    <h2 class="vl-section-title">El manifiesto</h2>
+    <span class="vl-section-meta">por la banda</span>
+  </div>
+  <div class="vl-sobre-cols">
+    <p>Tocamos lo que sentimos. Lo que sonó en una cassette gastada, en un viaje en colectivo, en un cumpleaños que duró hasta las seis. No inventamos la rueda — la hacemos girar a nuestra manera.</p>
+    <div class="vl-sobre-pull">"El sábado es <span class="red">sagrado</span>. El ensayo es inamovible."</div>
+    <p>Somos cinco. Cada uno con su rol, su instrumento, su forma de pegarle al tiempo. Charlie pone la casa, Rubén la voz, Ale el pulso, Kike el grave, Oscar los solos. La consistencia convierte a un grupo de amigos en una banda real.</p>
+    <p>El plan es simple: dominar tres canciones por bloque, salir a tocar cuando suenen limpias, y construir desde abajo — bares, cumpleaños, festivales barriales. Sin atajos. Sin disfraces.</p>
+    <p>Si nos escuchás, vas a reconocer cada tema. Si nos ves en vivo, te vas a quedar a la última. Esa es la apuesta.</p>
+  </div>
+</section>
+
+<section class="vl-section" id="banda">
+  <div class="vl-section-head">
+    <span class="vl-section-num">N° 02</span>
+    <h2 class="vl-section-title">Los cinco</h2>
+    <span class="vl-section-meta">hover sobre cada uno</span>
+  </div>
+  <div class="vl-band-grid" id="band"></div>
+</section>
+
+<section class="vl-section" id="setlist">
+  <div class="vl-section-head">
+    <span class="vl-section-num">N° 03</span>
+    <h2 class="vl-section-title">El Setlist</h2>
+    <span class="vl-section-meta">17 tracks · viaje emocional</span>
+  </div>
+  <div class="vl-setlist-grid" id="setlist"></div>
+</section>
+
+<section class="vl-section">
+  <div class="vl-section-head">
+    <span class="vl-section-num">N° 04</span>
+    <h2 class="vl-section-title">Demos</h2>
+    <span class="vl-section-meta">ensayos · casa de Charlie</span>
+  </div>
+  <div class="vl-demos-grid" id="demos"></div>
+</section>
+
+<section class="vl-section" id="fechas">
+  <div class="vl-section-head">
+    <span class="vl-section-num">N° 05</span>
+    <h2 class="vl-section-title">Próximas Fechas</h2>
+    <span class="vl-section-meta">entradas · venue · status</span>
+  </div>
+  <div class="vl-fechas-grid" id="fechas"></div>
+</section>
+
+<section class="vl-booking" id="booking">
+  <div class="vl-booking-eyebrow">— CONTRATAR / BOOK —</div>
+  <h2 class="vl-booking-title">Hace que <em>la noche</em> tenga banda.</h2>
+  <p class="vl-booking-sub">Bares, cumpleaños, eventos privados, festivales barriales. Si querés música en vivo de verdad — escribinos.</p>
+  <a class="vl-booking-cta" href="mailto:booking@vibralejana.com.py">Pedir presupuesto →</a>
+  <div class="vl-booking-contact">
+    <a href="mailto:booking@vibralejana.com.py">EMAIL · booking@vibralejana.com.py</a>
+    <a href="https://wa.me/595981000000">WHATSAPP · +595 981 000 000</a>
+    <a href="#">IG · @VIBRALEJANA</a>
+    <a href="#">YT · @VIBRALEJANA</a>
+  </div>
+</section>
+
+<footer class="vl-footer">
+  <span>© MMXXV · VIBRA LEJANA</span>
+  <span>HECHO EN ASUNCIÓN, PY</span>
+  <span>SIDE B / WAVEFORM EDITION</span>
+</footer>
+
+<script src="../shared/data.js"></script>
+<script>
+(() => {
+  const D = window.VL_DATA;
+  // cursor
+  const c = document.getElementById("cursor");
+  document.addEventListener("mousemove", e => {
+    c.style.left = e.clientX + "px"; c.style.top = e.clientY + "px";
+  });
+  if ('ontouchstart' in window) { c.style.display = 'none'; document.body.style.cursor = 'auto'; }
+
+  // Hero waveform
+  const hw = document.getElementById("hero-wave");
+  const N = 120;
+  let html = "";
+  for (let i = 0; i < N; i++) {
+    const t = i / N;
+    const env = Math.sin(t * Math.PI);
+    const h = (10 + Math.abs(Math.sin(i * 0.4) + Math.cos(i * 0.13) + Math.sin(i * 0.07)) * 35) * (0.4 + env * 0.6);
+    const isRed = i > N * 0.3 && i < N * 0.7 && i % 5 === 0;
+    html += `<span class="b ${isRed ? 'red' : ''}" style="height:${h}px"></span>`;
+  }
+  hw.innerHTML = html;
+
+  // Band
+  document.getElementById("band").innerHTML = D.integrantes.map(m => `
+    <div class="vl-member">
+      <div class="vl-member-side">SIDE ${m.side}</div>
+      <div>
+        <div class="vl-member-name">${m.nombre}</div>
+        <div class="vl-member-rol">${m.rol}</div>
+        <div class="vl-member-bio">${m.bio}</div>
+      </div>
+    </div>
+  `).join("");
+
+  // Setlist split SIDE A (1-9) / SIDE B (10-17)
+  const sideA = D.setlist.filter(t => t.n <= 9);
+  const sideB = D.setlist.filter(t => t.n > 9);
+  const renderTrack = (t) => `
+    <div class="vl-track">
+      <div class="vl-track-num">${t.mood}${String(t.n).padStart(2,'0')}</div>
+      <div>
+        <div class="vl-track-title">${t.tema}</div>
+        <div class="vl-track-artist">— ${t.artista}</div>
+        <div class="vl-track-detail">${t.rol}</div>
+      </div>
+      <div class="vl-track-time">${t.bpm}BPM · ${t.tono}</div>
+    </div>
+  `;
+  document.getElementById("setlist").innerHTML = `
+    <div class="vl-side-label"><span>◐ SIDE A</span><span>9 TRACKS · APERTURA</span><span class="red">●</span></div>
+    ${sideA.map(renderTrack).join("")}
+    <div class="vl-side-label"><span>◑ SIDE B</span><span>8 TRACKS · CIERRE</span><span class="red">●</span></div>
+    ${sideB.map(renderTrack).join("")}
+  `;
+
+  // Demos
+  document.getElementById("demos").innerHTML = D.demos.map((d, idx) => {
+    let bars = "";
+    for (let i = 0; i < 50; i++) {
+      const h = 6 + Math.abs(Math.sin(i * 0.3 + idx) + Math.cos(i * 0.5 + idx * 2)) * 18;
+      bars += `<span class="b" style="height:${h}px"></span>`;
+    }
+    return `
+      <div class="vl-demo">
+        <div class="vl-demo-num">DEMO 0${idx+1}</div>
+        <div class="vl-demo-title">${d.titulo}</div>
+        <div class="vl-demo-sub">${d.subtitulo}</div>
+        <div class="vl-demo-wave">${bars}</div>
+        <div class="vl-demo-bottom">
+          <span>${d.duracion}</span>
+          <span><span class="vl-demo-play"></span></span>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  // Fechas
+  document.getElementById("fechas").innerHTML = D.fechas.map(f => `
+    <div class="vl-fecha">
+      <div class="vl-fecha-date">
+        <div class="vl-fecha-day">${f.dia}</div>
+        <div class="vl-fecha-mes">${f.mes}</div>
+      </div>
+      <div>
+        <div class="vl-fecha-lugar">${f.lugar}</div>
+        <div class="vl-fecha-meta">${f.ciudad} · ${f.hora} hs</div>
+        <div class="vl-fecha-meta">${f.tipo}</div>
+        <span class="vl-fecha-status">${f.estado}</span>
+      </div>
+    </div>
+  `).join("");
+
+  // hover
+  document.querySelectorAll("a, .vl-track, .vl-member, .vl-demo, .vl-fecha").forEach(el => {
+    el.addEventListener("mouseenter", () => c.classList.add("hover"));
+    el.addEventListener("mouseleave", () => c.classList.remove("hover"));
+  });
+})();
+</script>
+</body>
+</html>
