@@ -653,10 +653,10 @@
       { n: "17", tema: "De Música Ligera", artista: "Soda Stereo" }
     ],
     fechas: [
-      { dia: "24", mes: "JUL", anio: "2026", lugar: "Asado Roga", ciudad: "Asunción · PY", hora: "21:00", estado: "CONFIRMADO", tipo: "Show en vivo", detalle: "Puertas abiertas desde las 20:00. Entrada libre, consumo en el local. Set de dos horas con todo el repertorio de rock clásico." }
+      { dia: "24", mes: "JUL", anio: "2026", lugar: "Asado Roga", ciudad: "Asunción · PY", hora: "21:00", estado: "CONFIRMADO", tipo: "Show en vivo", detalle: "Puertas abiertas desde las 20:00. Entrada libre, consumo en el local. Set de dos horas con todo el repertorio de rock clásico.", flyer: "assets/flyer-asado-roga.jpg" }
     ],
     demos: [
-      { titulo: "Creep", subtitulo: "Frasquito Records · 04/07/2026", duracion: "4:48", audioFile: "assets/audio/creep.mp3" },
+      { titulo: "Creep", subtitulo: "Frasquito Records · 04/07/2026", duracion: "—", audioFile: null },
       { titulo: "Persiana Americana", subtitulo: "Frasquito Records · 04/07/2026", duracion: "—", audioFile: null },
       { titulo: "Rayando el Sol", subtitulo: "Frasquito Records · 04/07/2026", duracion: "—", audioFile: null },
       { titulo: "Ana Julia", subtitulo: "Frasquito Records · 04/07/2026", duracion: "—", audioFile: null },
@@ -860,7 +860,9 @@
       '<div class="vl-fecha-panel" id="' + panelId + '" hidden>' +
         '<div>' +
           '<div class="vl-flyer-label">Flyer del show</div>' +
-          '<div class="vl-flyer-box"><span>Flyer próximamente</span></div>' +
+          (f.flyer
+            ? '<div class="vl-flyer-box" style="padding:0;"><img src="' + f.flyer + '" alt="Flyer ' + f.lugar + '" style="width:100%;height:100%;object-fit:cover;"></div>'
+            : '<div class="vl-flyer-box"><span>Flyer próximamente</span></div>') +
         '</div>' +
         '<div style="padding-top:8px;">' +
           '<div class="vl-detalle-label">Detalles del show</div>' +
