@@ -476,6 +476,16 @@
     <h2>Próximas fechas</h2>
   </div>
   <div id="fechas-list"></div>
+
+  <div id="fechas-anteriores-wrap" hidden style="margin-top:80px;">
+    <div class="vl-section-head" style="margin-bottom:48px;">
+      <h2 style="font-size:clamp(24px,4vw,40px);">Eventos anteriores</h2>
+    </div>
+    <div id="fechas-anteriores-list"></div>
+    <div style="text-align:center; margin-top:32px;">
+      <button type="button" id="fechas-ver-mas" class="vl-btn-outline">Ver más</button>
+    </div>
+  </div>
 </section>
 
 <!-- BOOKING -->
@@ -653,7 +663,9 @@
       { n: "17", tema: "De Música Ligera", artista: "Soda Stereo" }
     ],
     fechas: [
-      { dia: "24", mes: "JUL", anio: "2026", lugar: "Asado Roga", ciudad: "Asunción · PY", hora: "21:00", estado: "CONFIRMADO", tipo: "Show en vivo", detalle: "Puertas abiertas desde las 20:00. Entrada libre, consumo en el local. Set de dos horas con todo el repertorio de rock clásico.", flyer: "assets/flyer-asado-roga.jpg" }
+      { fecha: "2026-07-24", dia: "24", mes: "JUL", anio: "2026", lugar: "Asado Roga", ciudad: "Asunción · PY", hora: "21:00", estado: "CONFIRMADO", tipo: "Show en vivo", detalle: "Puertas abiertas desde las 20:00. Entrada libre, consumo en el local. Set de dos horas con todo el repertorio de rock clásico.", flyer: "assets/flyer-asado-roga.jpg" },
+      { fecha: "2026-08-08", dia: "08", mes: "AGO", anio: "2026", lugar: "Catedral de San Lorenzo", ciudad: "San Lorenzo · PY", hora: "21:00", estado: "CONFIRMADO", tipo: "Cena show", detalle: "Cena show por las fiestas patronales, en el estacionamiento de la Catedral de San Lorenzo.", flyer: null },
+      { fecha: "2026-08-15", dia: "15", mes: "AGO", anio: "2026", lugar: "Gazebo", ciudad: "Lambaré · PY", hora: "22:00", estado: "CONFIRMADO", tipo: "Show en vivo", detalle: "Covers de Ataque 77, Enanitos Verdes, Auténticos Decadentes, Maná, Soda Stereo y más. Acosta Ñu 362, Lambaré. Info: 0972 647700. Entradas 20.000 Gs.", flyer: "assets/flyer-gazebo.png" }
     ],
     demos: [
       { titulo: "Creep", subtitulo: "Frasquito Records · 04/07/2026", duracion: "—", audioFile: null },
@@ -847,9 +859,14 @@
 
   /* ---- FECHAS ---- */
   var fechasList = document.getElementById("fechas-list");
-  DATA.fechas.forEach(function (f, i) {
+  var anterioresWrap = document.getElementById("fechas-anteriores-wrap");
+  var anterioresList = document.getElementById("fechas-anteriores-list");
+  var verMasBtn = document.getElementById("fechas-ver-mas");
+  var ANTERIORES_PASO = 3;
+
+  function renderFecha(f, i, idPrefix, container) {
     var wrap = el("div", "vl-fecha");
-    var panelId = "fecha-panel-" + i;
+    var panelId = idPrefix + "-panel-" + i;
     wrap.innerHTML =
       '<button type="button" class="vl-fecha-row" aria-expanded="false" aria-controls="' + panelId + '">' +
         '<div class="vl-fecha-date"><div class="dia">' + f.dia + '</div><div class="mesanio">' + f.mes + ' · ' + f.anio + '</div></div>' +
@@ -861,7 +878,7 @@
         '<div>' +
           '<div class="vl-flyer-label">Flyer del show</div>' +
           (f.flyer
-            ? '<div class="vl-flyer-box" style="padding:0;"><img src="' + f.flyer + '" alt="Flyer ' + f.lugar + '" style="width:100%;height:100%;object-fit:cover;"></div>'
+            ? '<div class="vl-flyer-box" style="padding:0;"><img src="' + f.flyer + '" alt="Flyer ' + f.lugar + '" style="width:100%;height:100%;object-fit:contain;"></div>'
             : '<div class="vl-flyer-box"><span>Flyer próximamente</span></div>') +
         '</div>' +
         '<div style="padding-top:8px;">' +
@@ -879,8 +896,38 @@
       row.setAttribute("aria-expanded", isOpen ? "true" : "false");
       label.textContent = isOpen ? "Cerrar" : "Más info";
     });
-    fechasList.appendChild(wrap);
+    container.appendChild(wrap);
+  }
+
+  var hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+
+  var proximas = [];
+  var anteriores = [];
+  DATA.fechas.forEach(function (f) {
+    var d = new Date(f.fecha + "T00:00:00");
+    if (d.getTime() >= hoy.getTime()) { proximas.push(f); } else { anteriores.push(f); }
   });
+  proximas.sort(function (a, b) { return new Date(a.fecha) - new Date(b.fecha); });
+  anteriores.sort(function (a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+
+  proximas.forEach(function (f, i) { renderFecha(f, i, "fecha", fechasList); });
+
+  if (anteriores.length) {
+    anterioresWrap.hidden = false;
+    var anterioresMostradas = 0;
+
+    function mostrarMasAnteriores() {
+      var siguientes = anteriores.slice(anterioresMostradas, anterioresMostradas + ANTERIORES_PASO);
+      siguientes.forEach(function (f, i) { renderFecha(f, anterioresMostradas + i, "fecha-ant", anterioresList); });
+      anterioresMostradas += siguientes.length;
+      if (anterioresMostradas >= anteriores.length) { verMasBtn.hidden = true; }
+    }
+
+    mostrarMasAnteriores();
+    if (anteriores.length <= ANTERIORES_PASO) { verMasBtn.hidden = true; }
+    verMasBtn.addEventListener("click", mostrarMasAnteriores);
+  }
 
   /* ---- BOOKING MODAL ---- */
   var bookingModal = document.getElementById("booking-modal");
