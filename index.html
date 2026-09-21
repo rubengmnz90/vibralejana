@@ -200,6 +200,10 @@
   .vl-fecha.open .vl-chevron { transform: rotate(-135deg); }
   .vl-fecha-panel { padding: 8px 8px 40px; display: grid; grid-template-columns: minmax(240px,340px) 1fr; gap: 36px; align-items: start; }
   .vl-fecha-panel[hidden] { display: none; }
+  @media (min-width: 769px) {
+    .vl-fecha-panel:has(.vl-flyer-set > .vl-flyer-box:nth-child(2)) { grid-template-columns: minmax(300px,600px) 1fr; }
+  }
+  .vl-flyer-set { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
   .vl-flyer-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.5; margin-bottom: 10px; }
   .vl-flyer-box {
     width: 100%; aspect-ratio: 3/4; background: linear-gradient(160deg,#1a1611 0%, #000000 100%); border: 1px solid rgba(240,230,210,0.16);
@@ -671,7 +675,9 @@
       { fecha: "2026-08-07", dia: "07", mes: "AGO", anio: "2026", lugar: "La Romería de SanLo", ciudad: "San Lorenzo · PY", hora: "23:30", estado: "CONFIRMADO", tipo: "Show en vivo", detalle: "Presentación en la Romería de San Lorenzo. Entrada libre.", flyer: "assets/flyer-romeria-sanlo.png" },
       { fecha: "2026-08-14", dia: "14", mes: "AGO", anio: "2026", lugar: "Tigo Sports", ciudad: "Programa del Triplete", hora: "21:30", estado: "CONFIRMADO", tipo: "TV", detalle: "Presentación en el programa del Triplete, por el canal Tigo Sports.", flyer: "assets/flyer-tigo-sports.png" },
       { fecha: "2026-08-15", dia: "15", mes: "AGO", anio: "2026", lugar: "Gazebo", ciudad: "Lambaré · PY", hora: "22:00", estado: "CONFIRMADO", tipo: "Show en vivo", detalle: "Covers de Ataque 77, Enanitos Verdes, Auténticos Decadentes, Maná, Soda Stereo y más. Acosta Ñu 362, Lambaré. Info: 0972 647700. Entradas 20.000 Gs.", flyer: "assets/flyer-gazebo.png" },
-      { fecha: "2026-09-18", dia: "18", mes: "SEP", anio: "2026", lugar: "Die Mannshaft", ciudad: "Asunción · PY", hora: "23:00", estado: "CONFIRMADO", tipo: "Show en vivo", detalle: "Mcal. Estigarribia 1050 e/ Brasil & EEUU. Entradas anticipadas 20.000 Gs, en puerta 25.000 Gs.", flyer: "assets/flyer-die-mannshaft.png" }
+      { fecha: "2026-09-18", dia: "18", mes: "SEP", anio: "2026", lugar: "Die Mannshaft", ciudad: "Asunción · PY", hora: "23:00", estado: "CONFIRMADO", tipo: "Show en vivo", detalle: "Mcal. Estigarribia 1050 e/ Brasil & EEUU. Entradas anticipadas 20.000 Gs, en puerta 25.000 Gs.", flyer: "assets/flyer-die-mannshaft.png" },
+      { fecha: "2026-10-17", dia: "17", mes: "OCT", anio: "2026", lugar: "Spartan Music Bar", ciudad: "San Lorenzo · PY", hora: "22:00", estado: "CONFIRMADO", tipo: "Show en vivo", detalle: "Los clásicos del rock, en vivo. Covers de Ataque 77, Eagles, Guns N' Roses, Ratones Paranoicos, Soda Stereo, Maná y muchos más. Mira Flores e/ Unidad, San Lorenzo. Entrada general en puerta 30.000 Gs.", flyer: ["assets/flyer-spartan-1.jpg", "assets/flyer-spartan-2.jpg"] },
+      { fecha: "2026-10-30", dia: "30", mes: "OCT", anio: "2026", lugar: "Gazebo", ciudad: "Lambaré · PY", hora: "21:00", estado: "CONFIRMADO", tipo: "Halloween Rock Fest", detalle: "Vibra Lejana presenta el Halloween Rock Fest. Tributos a Ataque 77, Guasones, Ratones Paranoicos, Mamonas Assassinas, Eagles, Radiohead, a-ha, Turf y muchos más. Acosta Ñu 362, Lambaré. Info de entrada y reservas: 0972 647700. Entrada 20.000 Gs.", flyer: "assets/flyer-halloween-rock-fest.jpg" }
     ],
     demos: [
       { titulo: "Creep", subtitulo: "Frasquito Records · 04/07/2026", duracion: "—", audioFile: "assets/audio/creep.mp3" },
@@ -877,6 +883,7 @@
   function renderFecha(f, i, idPrefix, container) {
     var wrap = el("div", "vl-fecha");
     var panelId = idPrefix + "-panel-" + i;
+    var flyers = Array.isArray(f.flyer) ? f.flyer : (f.flyer ? [f.flyer] : []);
     wrap.innerHTML =
       '<button type="button" class="vl-fecha-row" aria-expanded="false" aria-controls="' + panelId + '">' +
         '<div class="vl-fecha-date"><div class="dia">' + f.dia + '</div><div class="mesanio">' + f.mes + ' · ' + f.anio + '</div></div>' +
@@ -886,9 +893,11 @@
       '</button>' +
       '<div class="vl-fecha-panel" id="' + panelId + '" hidden>' +
         '<div>' +
-          '<div class="vl-flyer-label">Flyer del show</div>' +
-          (f.flyer
-            ? '<div class="vl-flyer-box" style="padding:0;"><img src="' + f.flyer + '" alt="Flyer ' + f.lugar + '" style="width:100%;height:100%;object-fit:contain;"></div>'
+          '<div class="vl-flyer-label">' + (flyers.length > 1 ? 'Flyers del show' : 'Flyer del show') + '</div>' +
+          (flyers.length
+            ? '<div class="vl-flyer-set">' + flyers.map(function (src) {
+                return '<div class="vl-flyer-box" style="padding:0;"><img src="' + src + '" alt="Flyer ' + f.lugar + '" style="width:100%;height:100%;object-fit:contain;"></div>';
+              }).join("") + '</div>'
             : '<div class="vl-flyer-box"><span>Flyer próximamente</span></div>') +
         '</div>' +
         '<div style="padding-top:8px;">' +
